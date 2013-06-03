@@ -1,0 +1,668 @@
+\chapter[Partition Forests -- Support Algorithms]{Partition Forests --\\Support Algorithms}
+\label{chap:appendixpf}
+
+\index{partition forests!support algorithms|(}
+
+%##################################################################################################
+\section{The Forest Data Structure}
+%##################################################################################################
+
+%################################################
+\paragraph{Ancestor Of}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Forest : Ancestor Of Implementation}
+\begin{lstlisting}[style=Default]
+function ancestor_of
+:	(node : NodeID; layerIndex : int) $\to$ NodeID
+
+	if layerIndex < node.layer() or layerIndex > highest_layer() then throw;
+
+	var cur : NodeID := node;
+	while cur.layer() < layerIndex
+		var layer : IForestLayer := forest_layer(cur.layer());
+		cur := NodeID(cur.layer() + 1, layer.node_parent(cur.index());
+	return cur;
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Are Connected}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Forest : Are Connected Implementation}
+\begin{lstlisting}[style=Default]
+function are_connected
+:	(nodes : Set<int>; layerIndex : int) $\to$ bool
+
+	if nodes.empty() then return false;
+
+	find_connected_component(ref nodes, layerIndex);
+
+	// If no nodes remain after finding the first connected component, the nodes must
+	// be connected, and vice-versa.
+	return nodes.empty();
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Children Of}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Forest : Children Of Implementation}
+\begin{lstlisting}[style=Default]
+function children_of
+:	(node : NodeID) $\to$ Set<NodeID>
+
+	// Special case: nodes in the leaf layer have no children.
+	if node.layer() = 0 then return {};
+
+	var layer : BranchLayer? := checked_branch_layer(node.layer());
+	if layer = null or not layer.has_node(node.index()) then throw;
+
+	var result : Set<NodeID>;
+	var childLayerIndex : int := node.layer() - 1;
+	for each c : int $\in$ layer.node_children(node.index());
+		result.insert(NodeID(childLayerIndex, c));
+	return result;
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Find Common Ancestor Layer}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Forest : Find Common Ancestor Layer Implementation}
+\label{code:appendixpf-findcommonancestorlayer}
+\begin{lstlisting}[style=Default]
+function find_common_ancestor_layer
+:	(component : Set<int>; layerIndex : int) $\to$ int
+
+	var curs : ref Set<int> := ref component;
+	while layerIndex $\le$ highest_layer() and curs.size() > 1
+		var layer : ForestLayer := forest_layer(layerIndex);
+		var parents : Set<int>;
+		for each n : int $\in$ curs
+			parents.insert(layer.node_parent(n));
+		curs := ref parents;
+		layerIndex := layerIndex + 1;
+	return layerIndex;
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Find Common Ancestor Layer And New Chain}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Forest : Find Common Ancestor Layer And New Chain Implementation}
+\label{code:appendixpf-findcommonancestorlayerandnewchain}
+\begin{lstlisting}[style=Default]
+function find_common_ancestor_layer_and_new_chain
+:	(oldParent : int; newParent : int; layerIndex : int) $\to$ (int,Chain)
+
+	var newChain : Chain;
+	var curOld, curNew : int := oldParent, newParent;
+	while layerIndex $\le$ highest_layer() and curOld $\ne$ curNew
+		newChain.push_front(NodeID(layerIndex, curNew));
+		var layer : ForestLayer := forest_layer(layerIndex);
+		curOld := layer.node_parent(curOld);
+		curNew := layer.node_parent(curNew);
+		layerIndex := layerIndex + 1;
+	return (layerIndex, newChain);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Find Connected Component}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Forest : Find Connected Component Implementation}
+\begin{lstlisting}[style=Default]
+function find_connected_component
+:	(nodes : ref Set<int>; layerIndex : int) $\to$ Set<int>
+
+	var result : Set<int>;
+	var layer : ForestLayer := forest_layer(layerIndex);
+	var seed : int := lowest_int(nodes);
+	nodes.erase(seed);
+
+	var q : Queue<int>;
+	q.push(seed);
+	while not q.empty()
+		var n : int := q.pop();
+		result.insert(n);
+		for each e : Edge $\in$ layer.adjacent_edges(n)
+			var other : int := other_end(e, n);
+			if nodes.contains(other) then
+				q.push(other);
+				nodes.erase(other);
+	return result;
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Find Connected Components}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Forest : Find Connected Components Implementation}
+\begin{lstlisting}[style=Default]
+function find_connected_components
+:	(nodes : Set<int>; layerIndex : int) $\to$ Vector<Set<int>>
+
+	var result : Vector<Set<int>>;
+	while not nodes.empty()
+		result.push_back(find_connected_component(nodes, layerIndex));
+	return result;
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Receptive Region Of}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Forest : Receptive Region Of Implementation}
+\begin{lstlisting}[style=Default]
+function receptive_region_of : (node : NodeID) $\to$ Deque<int>
+	var MARKER : int := -1;
+	var layerIndex : int := node.layer();
+	var nodeIndices : Deque<int> := [node.index(), MARKER];
+	while layerIndex $>$ 0
+		var layer : BranchLayer := branch_layer(layerIndex);
+		while true	// iterate until a break occurs
+			var n : int := nodeIndices.front();
+			nodeIndices.pop_front();
+			if n = MARKER then break;
+			nodeIndices.append(layer.node_children(n));
+		nodeIndices.push_back(MARKER);
+		layerIndex := layerIndex - 1;
+	nodeIndices.pop_back();
+	return nodeIndices;
+\end{lstlisting}
+\end{stulisting}
+
+%##################################################################################################
+\section{The Selection Data Structure}
+%##################################################################################################
+
+%################################################
+\paragraph{Clear}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Clear Implementation}
+\begin{lstlisting}[style=Default]
+function clear_impl : () $\to$ Modification
+	var modification : Modification;
+	for i := 0 up to forest.highest_layer()
+		for each n $\in$ layer(i)
+			modification.erase_node(NodeID(i, n));
+		layer(i).clear();
+	listeners.selection_was_cleared();
+	return modification;
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Combine}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Combine Implementation}
+\begin{lstlisting}[style=Default]
+function combine : (lhs : PartitionForestSelection; rhs : PartitionForestSelection) $\to$ $\emptyset$
+	assert empty();	// only invoke this method on newly-created selections
+	this := lhs;
+	for each n $\in$ rhs.nodes()
+		select_node_impl(n);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Combine Using Leaves}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Combine Using Leaves Implementation}
+\begin{lstlisting}[style=Default]
+function combine_using_leaves
+:	(lhs : PartitionForestSelection; rhs : PartitionForestSelection) $\to$ $\emptyset$
+	assert empty();	// only invoke this method on newly-created selections
+	for each n $\in$ lhs.nodes()
+		layer(0).append(forest().receptive_region_of(n));
+	for each n $\in$ rhs.nodes()
+		layer(0).append(forest().receptive_region_of(n));
+
+	consolidate_all();
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Consolidate All}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Consolidate All Implementation}
+\begin{lstlisting}[style=Default]
+function consolidate_all : () $\to$ $\emptyset$
+	for i : int := 0 up to forest().highest_layer() - 1
+		var parents : Set<NodeID>;
+		for each n $\in$ layer(i)
+			parents.insert(forest().parent_of(NodeID(i,n)));
+		for each p $\in$ parents
+			consolidate_node(p, null);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Consolidate Node}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Consolidate Node Implementation}
+\begin{lstlisting}[style=Default]
+function consolidate_node : (node : NodeID; modification : ref Modification?) $\to$ bool
+	// Check to see if all the children of the specified node are selected.
+	for each c $\in$ forest().children_of(node)
+		if not in_representation(c) then return false;
+
+	// If they are, deselect them and select this node instead.
+	for each c $\in$ forest().children_of(node)
+		erase_node(c, ref modification);
+	insert_node(node, ref modification);
+
+	listeners.node_was_consolidated(node);
+	return true;
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Consolidate Upwards From Node}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Consolidate Upwards From Node Implementation}
+\begin{lstlisting}[style=Default]
+function consolidate_upwards_from_node
+:	(node : NodeID; modification : ref Modification?) $\to$ $\emptyset$
+	var cur : NodeID := node;
+	while not cur.invalid() and consolidate_node(cur, ref modification)
+		cur := forest().parent_of(cur);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Contains}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Contains Implementation}
+\begin{lstlisting}[style=Default]
+function contains : (node : NodeID) $\to$ bool
+	if in_representation(node) then return true;
+	var trail : Stack<NodeID>;
+	return not find_ancestor_in_representation(node, trail).invalid();
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Deconsolidate Node}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Deconsolidate Node Implementation}
+\begin{lstlisting}[style=Default]
+function deconsolidate_node : (node : NodeID; modification : ref Modification?) $\to$ $\emptyset$
+	// Replace the selected node with its children in the forest.
+	erase_node(node, ref modification);
+	for each c $\in$ forest().children_of(node)
+		insert_node(c, ref modification);
+	listeners.node_was_deconsolidated(node);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Descendants In Layer}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Descendants In Layer Implementation}
+\begin{lstlisting}[style=Default]
+function descendants_in_layer : (node : NodeID; layerIndex : int) $\to$ List<NodeID>
+	assert node.layer() $>$ layerIndex;
+
+	var children : Set<NodeID> := forest().children_of(node);
+	if node.layer() $\ne$ layerIndex + 1 then
+		var descendants : List<NodeID>;
+		for each c $\in$ children
+			descendants.append(descendants_in_layer(c, layerIndex));
+		return descendants;
+	else return children;
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Descendants In Representation}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Descendants In Representation Implementation}
+\begin{lstlisting}[style=Default]
+function descendants_in_representation : (node : NodeID) $\to$ List<NodeID>
+	var descendants : List<NodeID>;
+	for each c $\in$ forest().children_of(node)
+		if in_representation(c) then descendants.push_back(c);
+		else descendants.append(descendants_in_representation(c));
+	return descendants;
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Erase Node}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Erase Node Implementation}
+\begin{lstlisting}[style=Default]
+function erase_node : (node : NodeID; modification : ref Modification?) $\to$ $\emptyset$
+	layer(node.layer()).erase(node.index());
+	if modification $\ne$ null then modification.erase_node(node);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Find Ancestor In Representation}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Find Ancestor In Representation Implementation}
+\begin{lstlisting}[style=Default]
+function find_ancestor_in_representation
+:	(node : NodeID; trail : ref Stack<NodeID>) $\to$ NodeID
+	var parent : NodeID := forest().parent_of(node);
+	trail.push(parent);
+
+	// If this node has no parent, then it definitely has no ancestor in the
+	// representation.
+	if parent.invalid() then return parent;
+
+	// If this node has a parent and it's in the representation, then return it.
+	if in_representation(parent) then return parent;
+
+	// Otherwise, any ancestor this node may have is also its parent's ancestor,
+	// so recurse.
+	return find_ancestor_in_representation(parent, trail);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Insert Node}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Insert Node Implementation}
+\begin{lstlisting}[style=Default]
+function insert_node : (node : NodeID; modification : ref Modification?) $\to$ $\emptyset$
+	layer(node.layer()).insert(node.index());
+	if modification $\ne$ null then modification.insert_node(node);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Merge Layer}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Merge Layer Implementation}
+\begin{lstlisting}[style=Default]
+/*
+Calculates the layer in which any merging of the selected nodes should happen.
+
+viewLayer - The layer being `viewed' by the user.
+*/
+function merge_layer : (viewLayer : int) $\to$ int
+	for i : int := 0 up to viewLayer - 1
+		if not layer(i).empty() return i;
+	return viewLayer;
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Replace With Selection}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Replace With Selection Implementation}
+\begin{lstlisting}[style=Default]
+function replace_with_selection_impl
+:	(selection : PartitionForestSelection) $\to$ Modification
+	var modification : Modification;
+	for i : int := 0 up to forest().highest_layer()
+		for each n $\in$ layer(i)
+			modification.erase_node(NodeID(i, n));
+		layer(i).clear();
+	for each n $\in$ selection
+		modification.insert_node(n);
+		layer(n.layer()).insert(n.index());
+	listeners.selection_was_replaced(selection);
+	return modification;
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Split Selection}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Split Selection Implementation}
+\begin{lstlisting}[style=Default]
+function split_selection
+:	(trail : ref Stack<NodeID>; modification : ref Modification) $\to$ $\emptyset$
+	while not trail.empty()
+		var cur : NodeID := trail.top();
+		trail.pop();
+		deconsolidate_node(cur, ref modification);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Subtract}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Subtract Implementation}
+\begin{lstlisting}[style=Default]
+function subtract : (lhs : PartitionForestSelection; rhs : PartitionForestSelection) $\to$ $\emptyset$
+	assert empty();	// only invoke this method on newly-created selections
+	this := lhs;
+	for each n $\in$ rhs.nodes()
+		deselect_node_impl(n);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Subtract Using Leaves}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Subtract Using Leaves Implementation}
+\begin{lstlisting}[style=Default]
+function subtract_using_leaves
+:	(lhs : PartitionForestSelection; rhs : PartitionForestSelection) $\to$ $\emptyset$
+	assert empty();	// only invoke this method on newly-created selections
+	for each n $\in$ lhs.nodes()
+		layer(0).append(forest().receptive_region_of(n));
+	for each n $\in$ rhs.nodes()
+		layer(0).erase_all(forest().receptive_region_of(n));
+	consolidate_all();
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Node Iterators}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : Node Iterators Implementation}
+\lstinputlisting[style=Default]{appendixpf/appendixpf-selection-nodeiterators.lst}
+\end{stulisting}
+
+\newpage
+
+%################################################
+\paragraph{View At Layer Iterators}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Selection : View At Layer Iterators Implementation}
+\lstinputlisting[style=Default]{appendixpf/appendixpf-selection-viewatlayeriterators.lst}
+\end{stulisting}
+
+\newpage
+
+%##################################################################################################
+\section{The Multi-Feature Selection Data Structure}
+%##################################################################################################
+
+%################################################
+\paragraph{Clear All}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Multi-Feature Selection : Clear All Implementation}
+\begin{lstlisting}[style=Default]
+function clear_all : () $\to$ $\emptyset$
+	"begin_command_sequence();" // handled by the command sequence guard
+	for each (feature,ref selection) $\in$ mfs
+		selection.clear();
+	"end_command_sequence();" // handled by the command sequence guard
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Clear Feature}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Multi-Feature Selection : Clear Feature Implementation}
+\begin{lstlisting}[style=Default]
+function clear_feature : (feature : Feature) $\to$ $\emptyset$
+	if has_selection(feature) then
+		selection(feature).clear();
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Combine}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Multi-Feature Selection : Combine Implementation}
+\lstinputlisting[style=Default]{appendixpf/appendixpf-mfs-combine.lst}
+\end{stulisting}
+
+%################################################
+\paragraph{Features Of}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Multi-Feature Selection : Features Of Implementation}
+\begin{lstlisting}[style=Default]
+function features_of : (node : NodeID) $\to$ Vector<Feature>
+	var features : Vector<Feature>;
+	for each (feature,selection) $\in$ selections()
+		if selection.contains(node) then
+			features.push_back(feature);
+	return features;
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Identify Multi-Feature Selection}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Multi-Feature Selection : Identify Multi-Feature Selection Implementation}
+\begin{lstlisting}[style=Default]
+function identify_multi_feature_selection
+:	(mfs : PartitionForestMultiFeatureSelection) $\to$ $\emptyset$
+	"begin_command_sequence();" // handled by the command sequence guard
+	for each (feature,selection) $\in$ mfs
+		identify_selection(selection, feature);
+	"end_command_sequence();" // handled by the command sequence guard
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Identify Node}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Multi-Feature Selection : Identify Node Implementation}
+\begin{lstlisting}[style=Default]
+function identify_node : (node : NodeID; feature : Feature) $\to$ $\emptyset$
+	selection(feature).select_node(node);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Identify Selection}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Multi-Feature Selection : Identify Selection Implementation}
+\begin{lstlisting}[style=Default]
+function identify_selection
+:	(selection : PartitionForestSelection; feature : Feature) $\to$ $\emptyset$
+	var oldSelection : ref PartitionForestSelection := selection(feature);
+	var newSelection : PartitionForestSelection := make_selection(forest());
+	newSelection.combine_using_leaves(oldSelection, selection);
+	oldSelection.replace_with_selection(newSelection);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Subtract}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Multi-Feature Selection : Subtract Implementation}
+\lstinputlisting[style=Default]{appendixpf/appendixpf-mfs-subtract.lst}
+\end{stulisting}
+
+%################################################
+\paragraph{Unidentify Node}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Multi-Feature Selection : Unidentify Node Implementation}
+\begin{lstlisting}[style=Default]
+function unidentify_node : (node : NodeID; feature : Feature) $\to$ $\emptyset$
+	selection(feature).deselect_node(node);
+\end{lstlisting}
+\end{stulisting}
+
+%################################################
+\paragraph{Unidentify Selection}
+%################################################
+
+\begin{stulisting}[H]
+\caption{Multi-Feature Selection : Unidentify Selection Implementation}
+\begin{lstlisting}[style=Default]
+function unidentify_selection
+:	(selection : PartitionForestSelection; feature : Feature) $\to$ $\emptyset$
+	var oldSelection : ref PartitionForestSelection := selection(feature);
+	var newSelection : PartitionForestSelection := make_selection(forest());
+	newSelection.subtract_using_leaves(oldSelection, selection);
+	oldSelection.replace_with_selection(newSelection);
+\end{lstlisting}
+\end{stulisting}
+
+\index{partition forests!support algorithms|)}

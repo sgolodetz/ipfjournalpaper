@@ -28,21 +28,44 @@
 
 \section{Introduction}
 
-TODO \cite{gvccimi08,gvcispa09}
+%TODO \cite{gvccimi08,gvcispa09}
+
+Image segmentation, the problem of how to partition an image into regions that have some meaning in a given domain, and feature identification, the problem of how to ascribe meaning to some or all of those regions, are important tasks in a variety of contexts \cite{?}. However, as observed in \cite{golodetz11}, both remain challenging to completely automate due to the difficulty of specifying what constitutes a meaningful region in a particular context. In certain domains, particularly those such as medical imaging where the consequences of incorrect or inaccurate segmentation can be significant, it is therefore extremely important for domain specialists (e.g.~radiologists in the case of medical images) to be able to interact with the results of a segmentation produced by an automated tool in order to correct any mistakes made.
+
+Depending on the kind of segmentation used\footnotemark, these results can be represented in a variety of different ways and require varying different methods of interaction. For example, editing a segmentation result produced by thresholding (a technique that classifies individual pixels of the image as either background or foreground based on their value relative to a constant threshold, e.g.~all pixels $<= 128$ are background and all pixels $> 128$ are foreground) might involve changing the threshold value and re-segmenting the image, whereas editing a segmentation produced by a snakes approach (e.g.~\cite{?}) might involve dragging the snake contour using a graphical user interface.
+
+\footnotetext{A survey of many of the different kinds of segmentation can be found in \cite{golodetz11}.}
+
+One type of segmentation result that can provide a great deal of useful information for further processing is what we call the \emph{image partition forest} (IPF) representation\footnotemark, which represents an image as a hierarchy of partitions (the details of this representation will be described in \S\ref{sec:ipfs}). This representation is useful because it consists of related segmentations of the image at different scales, providing a helpful space in which to search for regions corresponding to image features of different sizes. An IPF can be produced as the result of a number of different segmentation approaches, and detailed techniques for constructing one using watershed/waterfall segmentation are described in \cite{golodetz11}.
+
+\footnotetext{The same data structure has appeared elsewhere in the literature under a variety of other names, e.g.~hierarchy of (region adjacency) graphs \cite{kropatsch04,nacken95,shen97}, hierarchical attributed region adjacency graph \cite{fischer04}, hierarchy of partitions \cite{haxhimusa03,lezoray06}, picture tree \cite{andrade03}, graph pyramid \cite{kerren06}, bounded irregular pyramid \cite{marfil07} and segmentation graph \cite{borenstein06}.}
+
+However, despite the in many ways ubiquitous nature of the data structure itself in the literature, comparatively little research appears to have been done in the past into ways of conveniently editing an IPF after it has been constructed. (One notable exception to this is \cite{nacken95}, in which Nacken describes an approach to the problem of what he calls \emph{connectivity-preserving relinking} -- we tackled the same problem in a slightly more general way as \emph{parent switching}, or how to change the hierarchy so as to move a region from being the child of one parent to the child of another, as described in \cite{golodetz11}.) This is unfortunate, because it limits the applicability of techniques that automatically produce such results in domains such as medical imaging where the later introduction of expert knowledge is important. For that reason, this paper presents a number of the algorithms first described in \cite{golodetz11} for facilitating such editing, most notably multi-level split and merge algorithms known respectively as \emph{unzipping} and \emph{zipping}, and a \emph{non-sibling node merging} algorithm that allows the user to conveniently merge image-adjacent nodes in a GUI without worrying about the underlying structure of the IPF. A complete set of IPF algorithms, together with detailed implementations, can be found in \cite{golodetz11}.
+
+The organisation of this paper is as follows: in \S\ref{sec:ipfs}, we provide a detailed description of the IPF data structure and outline the basic algorithms that can be performed upon it; in \S\ref{sec:zipping}, we present zipping algorithms for IPFs; in \S\ref{sec:nsmerge}, we present an algorithm for merging image-adjacent nodes; in \S\ref{sec:ui}, we demonstrate how our IPF algorithms can be used to facilitate user interaction by analysing a practical implementation of them in \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation; and in \S\ref{sec:conclusions}, we conclude.
 
 \section{Image Partition Forests}
+\label{sec:ipfs}
 
 TODO
 
 \section{Zipping Algorithms}
+\label{sec:zipping}
+
+TODO
+
+\section{Non-Sibling Node Merging}
+\label{sec:nsmerge}
 
 TODO
 
 \section{User Interaction}
+\label{sec:ui}
 
 TODO
 
 \section{Conclusions}
+\label{sec:conclusions}
 
 TODO
 

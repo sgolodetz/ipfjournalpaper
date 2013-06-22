@@ -4,6 +4,29 @@
 \usepackage{graphicx}
 \usepackage{subfigure}
 
+% Define shorter ways to include individual images
+\newcommand{\stufig}[4]						% images with default placement
+{
+	\begin{figure}
+	\begin{center}
+		\includegraphics[#1]{#2}
+		\caption{#3}
+		\label{#4}
+	\end{center}
+	\end{figure}
+}
+
+\newcommand{\stufigex}[5]					% images with specified placement
+{
+	\begin{figure}[#5]
+	\begin{center}
+		\includegraphics[#1]{#2}
+		\caption{#3}
+		\label{#4}
+	\end{center}
+	\end{figure}
+}
+
 % Define the stusubfig environment
 \newenvironment{stusubfig}[1]
 {
@@ -47,9 +70,29 @@ The organisation of this paper is as follows: in \S\ref{sec:ipfs}, we provide a 
 \section{Image Partition Forests}
 \label{sec:ipfs}
 
+\subsection{Data Structure}
+
+An image partition forest (or IPF) is a hierarchy of adjacency graphs that all partition the same image. As illustrated in Figure~\ref{fig:ipfs-concept}, which shows an IPF that might be constructed for a simple $4 \times 4$ image, an IPF consists of a number of layers. Every layer is an adjacency graph whose nodes correspond to contiguous regions of the underlying image. The regions $\{r_1,...,r_n\}$ corresponding to the nodes in each layer in an IPF over an image $I$ \emph{partition} $I$; that is, they satisfy $\bigcup_i r_i = I$ and $\forall i, j \cdot i \ne j \Rightarrow r_i \cap r_j = \emptyset$. Each layer is \emph{refined} by the next higher layer above it, in the sense that the region corresponding to each node in layer $i + 1$ is the union of some of the regions corresponding to nodes in layer $i$. For an example of this on a real image, see Figure~\ref{fig:ipfs-ctconcept}, which shows an IPF for a computerised tomography (CT) scan of the abdomen.
+
+%---
+\stufigex{height=19cm}{ipfs-concept.png}{The concept of a partition forest (see main text for discussion)}{fig:ipfs-concept}{p}
+%---
+
+%---
+\stufigex{height=19cm}{ipfs-ctconcept.png}{An example partition forest for an abdominal CT scan}{fig:ipfs-ctconcept}{p}
+%---
+
+Each node in an IPF can have a set of properties associated with it, shown as blue text in Figure~\ref{fig:ipfs-concept}. Properties of nodes in the leaf layer (which correspond to individual pixels in the image) can be assigned arbitrarily, but properties of nodes in branch layers must be functions of the properties of their children in the layer below. In this example, a single, arbitrary value has been associated with each node in the leaf layer of the IPF. Nodes in higher layers have been given a `mean value' property that is calculated from the values of the subsumed leaf nodes.
+
+Each layer also contains edges between nodes whose corresponding regions are adjacent in the image. Each edge has an associated value (shown as underlined text in the figure). The values on the edges in the leaf layer can be assigned according to any scheme desired -- in this example, they represent the height of the `lowest pass point' between adjacent regions, based on the values associated with the pixels. The value on an edge between a pair of nodes in a branch layer must be a function of the values on any edges between their respective children in the layer below. In this example, the value on an edge between two nodes, $u$ and $v$, in a branch layer is calculated to be the smallest value on any edge between a child of $u$ and a child of $v$, in keeping with the lowest pass idea above.
+
+In addition to the layers themselves, an IPF also contains forest links that join the nodes in adjacent layers together (the coloured, dashed lines in the figure). In particular, there is a link between each node and the node that contains it in the layer above. These links naturally define parent/child relationships between forest nodes.
+
+\subsection{Basic Algorithms}
+
 TODO
 
-\section{Zipping Algorithms}
+\section{Unzipping and Zipping}
 \label{sec:zipping}
 
 TODO

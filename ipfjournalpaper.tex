@@ -90,7 +90,17 @@ In addition to the layers themselves, an IPF also contains forest links that joi
 
 \subsection{Basic Algorithms}
 
-TODO
+As proved in \S4.3.1 of \cite{golodetz11}, an IPF for an image $I$ can be transformed into any other IPF for $I$ by the repeated application three basic algorithms: layer cloning, layer deletion and sibling node merging. For efficiency, we also add node splitting to this list, since it would be extremely inefficient (though possible) to implement node splitting in terms of the other three operations. Whilst full details of these algorithms (including how to implement them in a GUI environment) are given in \cite{golodetz11}, we nevertheless briefly describe them here because they provide a necessary background to the higher-level algorithms that follow.
+
+\emph{Layer Cloning}. Any layer in the IPF can be cloned so as to insert a layer just above it with an identical adjacency graph. The forest links between the layer being cloned, the clone and any layer above the insertion point are updated accordingly. To operation can be undone by deleting the newly-inserted clone layer.
+
+\emph{Layer Deletion}. Any layer in the IPF except the leaf layer can be deleted from the hierarchy. Any forest links that reference the deleted layer are removed, and new forest links are added where necessary between any layers on either side of the one being deleted. For the operation to be undoable, it is necessary to cache the layer when originally deleting it. The operation can then be undone by reinserting the layer into its original place in the hierarchy and recreating the forest links between it and the layers on either side of it (the information required to do this is present in the deleted layer).
+
+\emph{Node Splitting}. Nodes in any branch layer of the IPF can be split into multiple nodes representing smaller contiguous image regions. The algorithm takes as input the node to be split and a set of groups of its children into which to split it. Intuitively, the node being split is removed, a new node is created to be the parent of each such group, and the adjacency graph and forest links are updated accordingly. The operation can be undone by performing a sibling node merge on the results of the split.
+
+\emph{Sibling Node Merging}. Sibling nodes in any branch layer of the IPF can be merged provided that the union of the image regions they represent is a contiguous region (this preserves the invariant that every node in the IPF represents a contiguous region). A set of nodes are siblings if they either all have the same parent, or all have no parent (because they are in the top-most layer of the IPF). The details of how the algorithm can be implemented can be found in \cite{golodetz11}. To make the operation undoable, it is necessary to store the children of each of the nodes to be merged prior to performing the merge. The operation can then be undone using a node split, passing the child sets as input.
+
+Sibling node merging is an important low-level operation, but it is inconvenient to use in the context of a user interface for IPF editing because it forces the user to think about the underlying hierarchical structure of the IPF. As the user of such a system, it is far more common to want to merge nodes that are adjacent in the image than to want to merge nodes that are adjacent in the IPF. This is the motivation behind the development of the far more general non-sibling node merging algorithm described in \S\ref{sec:nsmerge}.
 
 \section{Unzipping and Zipping}
 \label{sec:zipping}

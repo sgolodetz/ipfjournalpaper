@@ -102,8 +102,16 @@ As proved in \S4.3.1 of \cite{golodetz11}, an IPF for an image $I$ can be transf
 
 Sibling node merging is an important low-level operation, but it is inconvenient to use in the context of a user interface for IPF editing because it forces the user to think about the underlying hierarchical structure of the IPF. As the user of such a system, it is far more common to want to merge nodes that are adjacent in the image than to want to merge nodes that are adjacent in the IPF. This is the motivation behind the development of the far more general non-sibling node merging algorithm described in \S\ref{sec:nsmerge}.
 
-\section{Unzipping and Zipping}
+\section{Zipping Algorithms}
 \label{sec:zipping}
+
+Although it would be possible to achieve effects such as merging regions that are adjacent in the image but not adjacent in the IPF by the repeated application of the four primitive algorithms, it would make for an extremely tedious user experience. A more helpful GUI would provide such operations directly, making the (sometimes extensive) changes to the IPF that are required behind the scenes. In practical terms, these operations generally involve making changes to multiple layers of the IPF: as such, it is extremely helpful to define intermediate-level IPF algorithms to effect multi-layer splits and merges. These are known as \emph{unzip node} (or simply \emph{unzipping}) and \emph{zip chains} (or simply \emph{zipping}), respectively, because the changes they make conceptually involve pulling apart different branches of the IPF and tying them to other branches of the IPF.
+
+\subsection{Unzip Node}
+
+TODO
+
+\subsection{Zip Chains}
 
 TODO
 

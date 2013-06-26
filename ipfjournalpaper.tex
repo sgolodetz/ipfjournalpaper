@@ -142,7 +142,9 @@ tabsize=4
 \noindent The segmentation of images and the subsequent identification of key features therein are important components of applications in a variety of contexts, including those such as medical imaging where extremely high levels of accuracy are required. However, both remain challenging to completely automate, and so there is often a need for domain specialists to be able to edit the results produced by automatic tools; the editing methods used evidently depend strongly on how the results are represented. One helpful representation is the \emph{image partition forest} (IPF), or region hierarchy, a tree-like data structure in which each node represents a contiguous region of the image. Unfortunately, since little research attention has been devoted in the past to ways of interacting with IPFs, it can be difficult for domain specialists to make changes to them after they have been built -- this imposes much higher accuracy requirements on tools that produce them, since those with the expert knowledge needed to correct any mistakes made by the tools are actively prevented from doing so. In this paper, we therefore present a set of algorithms that can be used to facilitate interactive changes to IPFs. The algorithms were implemented as a core part of \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation, and we highlight in particular the way in which the user experience was improved as a result.
 \end{abstract}
 
+%#####################
 \section{Introduction}
+%#####################
 
 %TODO \cite{gvccimi08,gvcispa09}
 
@@ -160,8 +162,10 @@ However, despite the ubiquitous nature of the data structure itself in the liter
 
 The organisation of this paper is as follows: in \S\ref{sec:ipfs}, we provide a detailed description of the IPF data structure and outline the basic algorithms that can be performed upon it; in \S\ref{sec:zipping}, we present zipping algorithms for IPFs; in \S\ref{sec:nsmerge}, we present an algorithm for merging image-adjacent nodes; in \S\ref{sec:ui}, we demonstrate how our IPF algorithms can be used to facilitate user interaction by analysing a practical implementation of them in \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation; and in \S\ref{sec:conclusions}, we conclude.
 
+%################################
 \section{Image Partition Forests}
 \label{sec:ipfs}
+%################################
 
 \subsection{Data Structure}
 
@@ -195,8 +199,10 @@ As proved in \S4.3.1 of \cite{golodetz11}, an IPF for an image $I$ can be transf
 
 Sibling node merging is an important low-level operation, but it is inconvenient to use in the context of a user interface for IPF editing because it forces the user to think about the underlying hierarchical structure of the IPF. As the user of such a system, it is far more common to want to merge nodes that are adjacent in the image than to want to merge nodes that are adjacent in the IPF. This is the motivation behind the development of the far more general non-sibling node merging algorithm described in \S\ref{sec:nsmerge}.
 
+%###########################
 \section{Zipping Algorithms}
 \label{sec:zipping}
+%###########################
 
 Although it would be possible to achieve effects such as merging regions that are adjacent in the image but not adjacent in the IPF by the repeated application of the four primitive algorithms, it would make for an extremely tedious user experience. A more helpful GUI would provide such operations directly, making the (sometimes extensive) changes to the IPF that are required behind the scenes. In practical terms, these operations generally involve making changes to multiple layers of the IPF: as such, it is extremely helpful to define intermediate-level IPF algorithms to effect multi-layer splits and merges. These are known as \emph{unzip node} (or simply \emph{unzipping}) and \emph{zip chains} (or simply \emph{zipping}), respectively, because the changes they make conceptually involve pulling apart different branches of the IPF and tying them to other branches of the IPF.
 
@@ -205,9 +211,35 @@ Although it would be possible to achieve effects such as merging regions that ar
 TODO
 
 %---
+\begin{stusubfig}{p}
+	\subfigure[Initial hierarchy]{\includegraphics[width=.45\linewidth]{ipfs-forest-unzipping-a-hierarchy.png}}%
+	\hspace{8mm}%
+	\subfigure[After splitting $(1,2)$]{\includegraphics[width=.45\linewidth]{ipfs-forest-unzipping-b-hierarchy.png}}%
+	\\
+	\subfigure[After splitting $(2,2)$]{\includegraphics[width=.45\linewidth]{ipfs-forest-unzipping-c-hierarchy.png}}%
+	\hspace{8mm}%
+	\subfigure[After splitting $(3,2)$]{\includegraphics[width=.45\linewidth]{ipfs-forest-unzipping-d-hierarchy.png}}%
+	\\
+	\subfigure[Initial layer $1$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-a-graph1.png}}%
+	\hspace{8mm}%
+	\subfigure[Initial layer $2$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-a-graph2.png}}%
+	\hspace{8mm}%
+	\subfigure[Initial layer $3$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-a-graph3.png}}%
+	\\
+	\subfigure[Final layer $1$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-b-graph1.png}}%
+	\hspace{8mm}%
+	\subfigure[Final layer $2$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-c-graph2.png}}%
+	\hspace{8mm}%
+	\subfigure[Final layer $3$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-d-graph3.png}}%
+\caption{An example of unzipping: unzipping node $(0,5)$ to layer $3$}
+\label{fig:ipfs-forest-unzipping}
+\end{stusubfig}
+%---
+
+%---
 \begin{stulisting}[p]
 \caption{Unzip Node: Implementation}
-\label{code:unzipnode}
+\label{code:ipfs-forest-unzipnode}
 \lstinputlisting[style=Default]{ipfs-forest-unzipnode.lst}
 \end{stulisting}
 %---
@@ -217,33 +249,81 @@ TODO
 TODO
 
 %---
+\begin{stusubfig}{p}
+	\subfigure[Initial hierarchy]{\includegraphics[width=.43\linewidth]{ipfs-forest-zipping-a-hierarchy.png}}%
+	\hspace{8mm}%
+	\subfigure[After merging layer $3$ nodes]{\includegraphics[width=.43\linewidth]{ipfs-forest-zipping-b-hierarchy.png}}%
+	\\
+	\subfigure[After merging layer $2$ nodes]{\includegraphics[width=.43\linewidth]{ipfs-forest-zipping-c-hierarchy.png}}%
+	\hspace{8mm}%
+	\subfigure[After merging layer $1$ nodes]{\includegraphics[width=.43\linewidth]{ipfs-forest-zipping-d-hierarchy.png}}%
+	\\
+	\subfigure[Initial layer $1$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-a-graph1.png}}%
+	\hspace{8mm}%
+	\subfigure[Initial layer $2$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-a-graph2.png}}%
+	\hspace{8mm}%
+	\subfigure[Initial layer $3$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-a-graph3.png}}%
+	\\
+	\subfigure[Final layer $1$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-d-graph1.png}}%
+	\hspace{8mm}%
+	\subfigure[Final layer $2$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-c-graph2.png}}%
+	\hspace{8mm}%
+	\subfigure[Final layer $3$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-b-graph3.png}}%
+\caption{An example of zipping: zipping together the four chains $[(3,0), (2,6), (1,6)]$, $[(3,2), (2,2)]$, $[(3,5), (2,5)]$ and $[(3,8), (2,8), (1,8)]$}
+\label{fig:ipfs-forest-zipping}
+\end{stusubfig}
+%---
+
+%---
 \begin{stulisting}[p]
 \caption{Zip Chains: Implementation}
-\label{code:zipchains}
+\label{code:ipfs-forest-zipchains}
 \lstinputlisting[style=Default]{ipfs-forest-zipchains.lst}
 \end{stulisting}
 %---
 
+%#################################
 \section{Non-Sibling Node Merging}
 \label{sec:nsmerge}
+%#################################
 
 TODO
+
+%---
+\begin{stusubfig}{p}
+	\subfigure[Initial hierarchy]{\includegraphics[width=.45\linewidth]{ipfs-forest-nonsiblingnodemerging-a-hierarchy.png}}%
+	\hspace{8mm}%
+	\subfigure[After unzipping $(1,0)$ and $(1,2)$ to layer $2$]{\includegraphics[width=.45\linewidth]{ipfs-forest-nonsiblingnodemerging-c-hierarchy.png}}%
+	\\
+	\subfigure[{After zipping $[(2,0), (1,0)]$ and $[(2,2), (1,2)]$}]{\includegraphics[width=.45\linewidth]{ipfs-forest-nonsiblingnodemerging-d-hierarchy.png}}%
+	\hspace{8mm}%
+	\subfigure[After unzipping $(1,6)$ and $(1,8)$ to layer $2$]{\includegraphics[width=.45\linewidth]{ipfs-forest-nonsiblingnodemerging-f-hierarchy.png}}%
+	\\
+	\subfigure[{After zipping $[(2,6), (1,6)]$ and $[(2,8), (1,8)]$}]{\includegraphics[width=.45\linewidth]{ipfs-forest-nonsiblingnodemerging-g-hierarchy.png}}%
+\caption{An example of non-sibling node merging: merging nodes $(1,0)$, $(1,2)$, $(1,6)$ and $(1,8)$}
+\label{fig:ipfs-forest-nonsiblingnodemerging}
+\end{stusubfig}
+%---
 
 %---
 \begin{stulisting}[p]
 \caption{Non-Sibling Node Merging: Implementation}
-\label{code:mergenonsiblingnodes}
+\label{code:ipfs-forest-mergenonsiblingnodes}
 \lstinputlisting[style=Default]{ipfs-forest-mergenonsiblingnodes.lst}
 \end{stulisting}
 %---
 
+%#########################
 \section{User Interaction}
 \label{sec:ui}
+%#########################
 
 TODO
 
+%######################
 \section{Conclusions}
 \label{sec:conclusions}
+%######################
 
 TODO
 

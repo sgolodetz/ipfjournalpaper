@@ -173,11 +173,11 @@ The organisation of this paper is as follows: in \S\ref{sec:ipfs}, we provide a 
 An image partition forest (or IPF) is a hierarchy of adjacency graphs that all partition the same image. As illustrated in Figure~\ref{fig:ipfs-concept}, which shows an IPF that might be constructed for a simple $4 \times 4$ image, an IPF consists of a number of layers. Every layer is an adjacency graph whose nodes correspond to contiguous regions of the underlying image. The regions $\{r_1,...,r_n\}$ corresponding to the nodes in each layer in an IPF over an image $I$ \emph{partition} the image; that is, they satisfy $\bigcup_j r_j = I$ and $\forall j, k \cdot j \ne k \Rightarrow r_j \cap r_k = \emptyset$. Each layer is \emph{refined} by the next highest layer above it, in the sense that the region corresponding to each node in layer $i + 1$ is the union of some of the regions corresponding to nodes in layer $i$. For an example of this on a real image, see Figure~\ref{fig:ipfs-ctconcept}, which shows an IPF for a computerised tomography (CT) scan of the abdomen.
 
 %---
-\stufigex{width=.9\linewidth}{ipfs-concept.png}{The concept of a partition forest (see main text for discussion)}{fig:ipfs-concept}{p}
+\stufigex{width=.9\linewidth}{ipfs-concept.png}{The concept of a partition forest (see main text for discussion)}{fig:ipfs-concept}{htb}
 %---
 
 %---
-\stufigex{width=.9\linewidth}{ipfs-ctconcept.png}{An example partition forest for an abdominal CT scan}{fig:ipfs-ctconcept}{p}
+\stufigex{width=.9\linewidth}{ipfs-ctconcept.png}{An example partition forest for an abdominal CT scan}{fig:ipfs-ctconcept}{htb}
 %---
 
 Each node in an IPF can have a set of properties associated with it, shown as blue text in Figure~\ref{fig:ipfs-concept}. Properties of nodes in the leaf layer (which correspond to individual pixels in the image) can be assigned arbitrarily, but properties of nodes in branch layers must be functions of the properties of their children in the layer below. In this example, a single, arbitrary value has been associated with each node in the leaf layer of the IPF. Nodes in higher layers have been given a `mean value' property that is calculated from the values of the subsumed leaf nodes.
@@ -189,8 +189,6 @@ In addition to the layers themselves, an IPF also contains forest links that joi
 \subsection{Basic Algorithms}
 
 As proved in \S4.3.1 of \cite{golodetz11}, an IPF for an image $I$ can be transformed into any other IPF for $I$ by the repeated application of three basic algorithms: layer cloning, layer deletion and sibling node merging. For efficiency, we also add node splitting to this list, since it would be extremely inefficient (though possible) to implement node splitting in terms of the other three operations. Whilst full details of these algorithms (including how to implement them in a GUI environment) are given in \cite{golodetz11}, we nevertheless briefly describe them here because they provide a necessary background to the higher-level algorithms that follow.
-
-\afterpage{\clearpage}
 
 \emph{Layer Cloning}. Any layer in the IPF can be cloned so as to insert a layer just above it with an identical adjacency graph. This is used to introduce a `new' partition of the underlying image for the purposes of further editing. The forest links between the layer being cloned, the clone and any layer above the insertion point are updated accordingly. The operation can be undone by deleting the newly-inserted clone layer.
 

@@ -1,8 +1,23 @@
 \documentclass[a4paper]{article}
 
 \usepackage{afterpage}
+\usepackage{bold-extra}
+\usepackage{color}
+\usepackage{float}
 \usepackage{graphicx}
+\usepackage{listings}
 \usepackage{subfigure}
+
+%%%%%%%%%%%%%%%
+%%% Colours %%%
+%%%%%%%%%%%%%%%
+
+\definecolor{darkgreen}{rgb}{0, 0.6, 0}
+\definecolor{lightgrey}{gray}{0.9}
+
+%%%%%%%%%%%
+% Figures %
+%%%%%%%%%%%
 
 % Define shorter ways to include individual images
 \newcommand{\stufig}[4]						% images with default placement
@@ -37,6 +52,82 @@
 	\end{center}
 	\end{figure}
 }
+
+%%%%%%%%%%%%%%%%%
+% Code Listings %
+%%%%%%%%%%%%%%%%%
+
+% Create a new type of float (called a stulisting) for listings
+\floatstyle{ruled}
+\newfloat{stulisting}{thp}{lop}
+\floatname{stulisting}{Listing}
+
+% Setup before using the listings package
+\renewcommand{\lstlistingname}{\textbf{Listing}}
+\newcommand{\thelstlisting}{\textbf{\arabic{lstlisting}}}
+
+\lstdefinelanguage{Pseudocode}{
+morekeywords={and,assert,break,case,continue,default,down,each,else,for,function,if,not,null,or,rangeswitch,ref,return,switch,then,this,throw,to,up,var,while},
+sensitive=true,
+morecomment=[l]{//},
+morecomment=[s]{/*}{*/}
+}
+
+\lstdefinestyle{Default}{
+abovecaptionskip=0.5cm,
+basicstyle=\scriptsize\ttfamily,
+belowcaptionskip=0.5cm,
+belowskip=0.5cm,
+columns=fixed,
+commentstyle=\color{darkgreen},
+language=Pseudocode,
+%numbers=left,
+numbers=none, % changed from the thesis (line numbers are less relevant here)
+numbersep=5pt,
+numberstyle=\tiny,
+mathescape=true,
+showstringspaces=false,
+stepnumber=1,
+tabsize=4
+}
+
+\lstdefinestyle{Snippet}{
+abovecaptionskip=0.5cm,
+aboveskip=0.5cm,
+basicstyle=\small\ttfamily,
+belowcaptionskip=0.5cm,
+belowskip=0.5cm,
+columns=fixed,
+commentstyle=\color{darkgreen},
+frame=lines,
+keywordstyle=\small\bfseries,
+language=Pseudocode,
+numbers=none,
+mathescape=true,
+showstringspaces=false,
+stepnumber=1,
+tabsize=4
+}
+
+% For C++ function prototypes
+\lstdefinestyle{Prototype}{
+abovecaptionskip=0.5cm,
+basicstyle=\small\ttfamily,
+belowcaptionskip=0.5cm,
+belowskip=0.5cm,
+columns=fixed,
+commentstyle=\color{darkgreen},
+language=C++,
+numbers=none,
+mathescape=true,
+showstringspaces=false,
+stepnumber=1,
+tabsize=4
+}
+
+%%%%%%%%%%%%%%%%%
+% Main Document %
+%%%%%%%%%%%%%%%%%
 
 \begin{document}
 
@@ -113,14 +204,38 @@ Although it would be possible to achieve effects such as merging regions that ar
 
 TODO
 
+%---
+\begin{stulisting}[p]
+\caption{Unzip Node: Implementation}
+\label{code:unzipnode}
+\lstinputlisting[style=Default]{ipfs-forest-unzipnode.lst}
+\end{stulisting}
+%---
+
 \subsection{Zip Chains}
 
 TODO
+
+%---
+\begin{stulisting}[p]
+\caption{Zip Chains: Implementation}
+\label{code:zipchains}
+\lstinputlisting[style=Default]{ipfs-forest-zipchains.lst}
+\end{stulisting}
+%---
 
 \section{Non-Sibling Node Merging}
 \label{sec:nsmerge}
 
 TODO
+
+%---
+\begin{stulisting}[p]
+\caption{Non-Sibling Node Merging: Implementation}
+\label{code:mergenonsiblingnodes}
+\lstinputlisting[style=Default]{ipfs-forest-mergenonsiblingnodes.lst}
+\end{stulisting}
+%---
 
 \section{User Interaction}
 \label{sec:ui}
@@ -131,6 +246,8 @@ TODO
 \label{sec:conclusions}
 
 TODO
+
+\clearpage
 
 \bibliographystyle{alpha}
 \bibliography{existingwork,mypapers}

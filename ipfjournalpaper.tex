@@ -211,17 +211,17 @@ If the four primitive algorithms are implemented as undoable commands (see \cite
 
 \subsection{Unzip Node}
 
-A node in any layer of the IPF can be unzipped to a specified higher layer (or the top of the IPF). This `separates out' the branch from the higher layer down to the specified node -- it performs a multi-layer split, with a set containing the node in question as one of the groups at each stage. The other groups for each split are defined to be the connected components of what is left of the node being split after removing the node being unzipped from consideration. See Figure~\ref{fig:ipfs-forest-unzipping} for an example.
-
-Unzipping takes as input the node to be unzipped and the (higher) layer to which to unzip it. It returns a set of chains that could in theory be zipped together in order to undo the operation, although (as previously mentioned) undo is actually handled automatically when unzipping is implemented as a composite command. A \emph{chain} is a sequence of nodes $[n_h,...,n_\ell]$, where $h \ge \ell$, $n_i$ is in layer $i$ and $\forall i \in [\ell,h) \cdot parent(n_i) = n_{i+1}$. It should be noted that the chains returned by unzipping are not necessarily all the same length, but they all start in the same layer of the IPF.
-
 %---
-\begin{stulisting}[p]
+\begin{stulisting}[t]
 \caption{Unzip Node: Implementation}
 \label{code:ipfs-forest-unzipnode}
 \lstinputlisting[style=Default]{ipfs-forest-unzipnode.lst}
 \end{stulisting}
 %---
+
+A node in any layer of the IPF can be unzipped to a specified higher layer (or the top of the IPF). This `separates out' the branch from the higher layer down to the specified node -- it performs a multi-layer split, with a set containing the node in question as one of the groups at each stage. The other groups for each split are defined to be the connected components of what is left of the node being split after removing the node being unzipped from consideration. See Figure~\ref{fig:ipfs-forest-unzipping} for an example.
+
+Unzipping takes as input the node to be unzipped and the (higher) layer to which to unzip it. It returns a set of chains that could in theory be zipped together in order to undo the operation, although (as previously mentioned) undo is actually handled automatically when unzipping is implemented as a composite command. A \emph{chain} is a sequence of nodes $[n_h,...,n_\ell]$, where $h \ge \ell$, $n_i$ is in layer $i$ and $\forall i \in [\ell,h) \cdot parent(n_i) = n_{i+1}$. It should be noted that the chains returned by unzipping are not necessarily all the same length, but they all start in the same layer of the IPF.
 
 The implementation of unzipping is shown in Listing~\ref{code:ipfs-forest-unzipnode}. As the algorithm progresses, we keep track of node chains that represent the strands being unzipped: these will be what is eventually returned as the result. In each iteration of the loop, we keep track of a `current' node, initially the input node. We determine the siblings of this node (defined to be the other children of its parent) and calculate their connected components. To these we add a singleton component containing the current node itself. We then split the parent of the current node into the specified components, update the aforementioned chains and repeat the process with the parent of the current node. The loop terminates when we reach the user-specified target layer.
 
@@ -230,7 +230,7 @@ The construction of the chains is the most interesting part of the algorithm. Th
 \footnotetext{This is an implementation trick that ensures that the chain leading up from the node being unzipped is the first chain in the array: this allows it to be easily identified by algorithms such as \texttt{merge\_nonsibling\_nodes} that need ready access to it (they would otherwise have to search through all the chains to find it). The final chain should not contain the actual node being unzipped (only the nodes above it), so in practice we remove it from the end of the chain again before returning.}
 
 %---
-\begin{table*}[t]
+\begin{table*}[p]
 \caption{Stepping through the chain construction for the unzipping example}
 \label{tbl:ipfs-forest-unzipping}
 \begin{tabular}{|l||l|l|l|l|l|}
@@ -255,24 +255,32 @@ Final & --- & --- & --- & --- & $[[(3,5),(2,5),(1,5)],[(3,2),(2,2),(1,2)],[(3,8)
 	\subfigure[After splitting $(2,2)$]{\includegraphics[width=.45\linewidth]{ipfs-forest-unzipping-c-hierarchy.png}}%
 	\hspace{8mm}%
 	\subfigure[After splitting $(3,2)$]{\includegraphics[width=.45\linewidth]{ipfs-forest-unzipping-d-hierarchy.png}}%
-	\\
-	\subfigure[Initial layer $1$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-a-graph1.png}}%
-	\hspace{8mm}%
-	\subfigure[Initial layer $2$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-a-graph2.png}}%
-	\hspace{8mm}%
-	\subfigure[Initial layer $3$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-a-graph3.png}}%
-	\\
-	\subfigure[Final layer $1$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-b-graph1.png}}%
-	\hspace{8mm}%
-	\subfigure[Final layer $2$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-c-graph2.png}}%
-	\hspace{8mm}%
-	\subfigure[Final layer $3$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-d-graph3.png}}%
+	%\\
+	%\subfigure[Initial layer $1$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-a-graph1.png}}%
+	%\hspace{8mm}%
+	%\subfigure[Initial layer $2$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-a-graph2.png}}%
+	%\hspace{8mm}%
+	%\subfigure[Initial layer $3$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-a-graph3.png}}%
+	%\\
+	%\subfigure[Final layer $1$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-b-graph1.png}}%
+	%\hspace{8mm}%
+	%\subfigure[Final layer $2$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-c-graph2.png}}%
+	%\hspace{8mm}%
+	%\subfigure[Final layer $3$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-unzipping-d-graph3.png}}%
 \caption{An example of unzipping: unzipping node $(0,5)$ to layer $3$}
 \label{fig:ipfs-forest-unzipping}
 \end{stusubfig}
 %---
 
 \subsection{Zip Chains}
+
+%---
+\begin{stulisting}[t]
+\caption{Zip Chains: Implementation}
+\label{code:ipfs-forest-zipchains}
+\lstinputlisting[style=Default]{ipfs-forest-zipchains.lst}
+\end{stulisting}
+%---
 
 A set of node chains that all start in the same layer can be zipped together, an operation that is effectively a multi-layer sibling node merge. Zipping takes as input $k$ chains $[n_{1h},...,n_{1\ell_1}],...,[n_{kh},...,n_{k\ell_k}]$ and returns the node and layer index that would be needed by an unzip to undo the operation. See Figure~\ref{fig:ipfs-forest-zipping} for an example.
 
@@ -289,14 +297,6 @@ The implementation of zipping is straightforward (see Listing~\ref{code:ipfs-for
 For valid zips, we start by determining the high and low layers of the chains. All the chains share the same high layer, so it suffices to take the high layer of the first chain in the array. The low layer is determined by a simple minimum element operation on the low layers of each of the individual chains. For each of the layers, from the top down, the relevant nodes are then extracted from the chains and merged using sibling node merging.
 
 %---
-\begin{stulisting}[p]
-\caption{Zip Chains: Implementation}
-\label{code:ipfs-forest-zipchains}
-\lstinputlisting[style=Default]{ipfs-forest-zipchains.lst}
-\end{stulisting}
-%---
-
-%---
 \begin{stusubfig}{p}
 	\subfigure[Initial hierarchy]{\includegraphics[width=.43\linewidth]{ipfs-forest-zipping-a-hierarchy.png}}%
 	\hspace{8mm}%
@@ -305,18 +305,18 @@ For valid zips, we start by determining the high and low layers of the chains. A
 	\subfigure[After merging layer $2$ nodes]{\includegraphics[width=.43\linewidth]{ipfs-forest-zipping-c-hierarchy.png}}%
 	\hspace{8mm}%
 	\subfigure[After merging layer $1$ nodes]{\includegraphics[width=.43\linewidth]{ipfs-forest-zipping-d-hierarchy.png}}%
-	\\
-	\subfigure[Initial layer $1$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-a-graph1.png}}%
-	\hspace{8mm}%
-	\subfigure[Initial layer $2$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-a-graph2.png}}%
-	\hspace{8mm}%
-	\subfigure[Initial layer $3$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-a-graph3.png}}%
-	\\
-	\subfigure[Final layer $1$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-d-graph1.png}}%
-	\hspace{8mm}%
-	\subfigure[Final layer $2$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-c-graph2.png}}%
-	\hspace{8mm}%
-	\subfigure[Final layer $3$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-b-graph3.png}}%
+	%\\
+	%\subfigure[Initial layer $1$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-a-graph1.png}}%
+	%\hspace{8mm}%
+	%\subfigure[Initial layer $2$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-a-graph2.png}}%
+	%\hspace{8mm}%
+	%\subfigure[Initial layer $3$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-a-graph3.png}}%
+	%\\
+	%\subfigure[Final layer $1$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-d-graph1.png}}%
+	%\hspace{8mm}%
+	%\subfigure[Final layer $2$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-c-graph2.png}}%
+	%\hspace{8mm}%
+	%\subfigure[Final layer $3$ graph]{\includegraphics[width=.22\linewidth]{ipfs-forest-zipping-b-graph3.png}}%
 \caption{An example of zipping: zipping together the four chains $[(3,0), (2,6), (1,6)]$, $[(3,2), (2,2)]$, $[(3,5), (2,5)]$ and $[(3,8), (2,8), (1,8)]$}
 \label{fig:ipfs-forest-zipping}
 \end{stusubfig}
@@ -336,7 +336,7 @@ The implementation is shown in Listing~\ref{code:ipfs-forest-mergenonsiblingnode
 For the example in Figure~\ref{fig:ipfs-forest-nonsiblingnodemerging}, the connected components of the input nodes are $\{(1,0),(1,2)\}$ and $\{(1,6),(1,8)\}$. Both $(1,0)$ and $(1,2)$ are unzipped to layer $2$, the layer below their common ancestor $(3,0)$. The chains thus created are then zipped together, resulting in $(1,0)$ and $(1,2)$ being merged in layer $1$. An analogous process is used to merge $(1,6)$ and $(1,8)$.
 
 %---
-\begin{stulisting}[p]
+\begin{stulisting}[t]
 \caption{Non-Sibling Node Merging: Implementation}
 \label{code:ipfs-forest-mergenonsiblingnodes}
 \lstinputlisting[style=Default]{ipfs-forest-mergenonsiblingnodes.lst}

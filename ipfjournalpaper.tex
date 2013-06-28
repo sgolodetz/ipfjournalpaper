@@ -289,6 +289,14 @@ The implementation of zipping is straightforward (see Listing~\ref{code:ipfs-for
 For valid zips, we start by determining the high and low layers of the chains. All the chains share the same high layer, so it suffices to take the high layer of the first chain in the array. The low layer is determined by a simple minimum element operation on the low layers of each of the individual chains. For each of the layers, from the top down, the relevant nodes are then extracted from the chains and merged using sibling node merging.
 
 %---
+\begin{stulisting}[p]
+\caption{Zip Chains: Implementation}
+\label{code:ipfs-forest-zipchains}
+\lstinputlisting[style=Default]{ipfs-forest-zipchains.lst}
+\end{stulisting}
+%---
+
+%---
 \begin{stusubfig}{p}
 	\subfigure[Initial hierarchy]{\includegraphics[width=.43\linewidth]{ipfs-forest-zipping-a-hierarchy.png}}%
 	\hspace{8mm}%
@@ -314,20 +322,26 @@ For valid zips, we start by determining the high and low layers of the chains. A
 \end{stusubfig}
 %---
 
-%---
-\begin{stulisting}[p]
-\caption{Zip Chains: Implementation}
-\label{code:ipfs-forest-zipchains}
-\lstinputlisting[style=Default]{ipfs-forest-zipchains.lst}
-\end{stulisting}
-%---
-
 %#################################
 \section{Non-Sibling Node Merging}
 \label{sec:nsmerge}
 %#################################
 
-TODO
+Having discussed unzipping and zipping, we are now in a position to implement the non-sibling node merging operation mentioned previously: this allows the user to merge nodes based on their adjacency in the image rather than on whether or not they share a common parent in the IPF. This is the `intuitive' merge operation that users might want to perform, but it is difficult to implement without the machinery provided by the zipping algorithms.
+
+Non-sibling node merging involves taking a set of arbitrary nodes in any layer of the hierarchy other than the lowest, dividing it into its connected components and then merging the nodes in each one individually (using a combination of unzipping and zipping). Since each component is connected, the result of each merge represents a contiguous image region. The algorithm takes as input the set of nodes to be merged, and returns the set of nodes resulting from merging each of the input's connected components (i.e.~there is one output node for each connected component of the input). See Figure~\ref{fig:ipfs-forest-nonsiblingnodemerging} for an example.
+
+The implementation is shown in Listing~\ref{code:ipfs-forest-mergenonsiblingnodes}. The first step is to calculate the connected components of the input nodes: each connected component of size $> 1$ will be merged into one result node. To perform the merge for each connected component, we first determine the common ancestor of the component's nodes. Each node is then unzipped to the layer below that containing the ancestor. In each case we keep track of the chain of nodes leading back down to the node being unzipped, appending the actual node being unzipped to the chain in each case (it would not otherwise be present). Finally, all of these chains are zipped together to merge the nodes in the connected component together.
+
+For the example in Figure~\ref{fig:ipfs-forest-nonsiblingnodemerging}, the connected components of the input nodes are $\{(1,0),(1,2)\}$ and $\{(1,6),(1,8)\}$. Both $(1,0)$ and $(1,2)$ are unzipped to layer $2$, the layer below their common ancestor $(3,0)$. The chains thus created are then zipped together, resulting in $(1,0)$ and $(1,2)$ being merged in layer $1$. An analogous process is used to merge $(1,6)$ and $(1,8)$.
+
+%---
+\begin{stulisting}[p]
+\caption{Non-Sibling Node Merging: Implementation}
+\label{code:ipfs-forest-mergenonsiblingnodes}
+\lstinputlisting[style=Default]{ipfs-forest-mergenonsiblingnodes.lst}
+\end{stulisting}
+%---
 
 %---
 \begin{stusubfig}{p}
@@ -343,14 +357,6 @@ TODO
 \caption{An example of non-sibling node merging: merging nodes $(1,0)$, $(1,2)$, $(1,6)$ and $(1,8)$}
 \label{fig:ipfs-forest-nonsiblingnodemerging}
 \end{stusubfig}
-%---
-
-%---
-\begin{stulisting}[p]
-\caption{Non-Sibling Node Merging: Implementation}
-\label{code:ipfs-forest-mergenonsiblingnodes}
-\lstinputlisting[style=Default]{ipfs-forest-mergenonsiblingnodes.lst}
-\end{stulisting}
 %---
 
 %#########################

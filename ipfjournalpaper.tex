@@ -274,7 +274,19 @@ Final & --- & --- & --- & --- & $[[(3,5),(2,5),(1,5)],[(3,2),(2,2),(1,2)],[(3,8)
 
 \subsection{Zip Chains}
 
-TODO
+A set of node chains that all start in the same layer can be zipped together, an operation that is effectively a multi-layer sibling node merge. Zipping takes as input $k$ chains $[n_{1h},...,n_{1\ell_1}],...,[n_{kh},...,n_{k\ell_k}]$ and returns the node and layer index that would be needed by an unzip to undo the operation. See Figure~\ref{fig:ipfs-forest-zipping} for an example.
+
+The implementation of zipping is straightforward (see Listing~\ref{code:ipfs-forest-zipchains}), but there are a number of important preconditions that must be checked before the main operation in order to avoid invalid zips:
+%
+\begin{enumerate}
+\item There must be chains to zip.
+\item Each chain must be non-empty and consist only of valid nodes.
+\item No chain must extend down as far as the leaf layer of the forest -- this prevents the merging of leaf layer nodes.
+\item The highest nodes in the chains must be siblings of each other.
+\item The sets of nodes to be merged in each layer must be connected.
+\end{enumerate}
+%
+For valid zips, we start by determining the high and low layers of the chains. All the chains share the same high layer, so it suffices to take the high layer of the first chain in the array. The low layer is determined by a simple minimum element operation on the low layers of each of the individual chains. For each of the layers, from the top down, the relevant nodes are then extracted from the chains and merged using sibling node merging.
 
 %---
 \begin{stusubfig}{p}

@@ -47,8 +47,8 @@ while cur.layer() $\ne$ toLayer
 
 	// Update the chains.
 	for each chain : Chain $\in$ chains
-		var h : PFNodeID := chain.front();
-		var p : PFNodeID := parent_of(h);
+		var h : NodeID := chain.front();
+		var p : NodeID := parent_of(h);
 		chain.push_front(p);
 		result.erase(p);
 

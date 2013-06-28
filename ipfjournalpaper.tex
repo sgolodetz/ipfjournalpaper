@@ -207,9 +207,44 @@ Sibling node merging is an important low-level operation, but it is inconvenient
 
 Although it would be possible to achieve effects such as merging regions that are adjacent in the image but not adjacent in the IPF by the repeated application of the four primitive algorithms, it would make for an extremely tedious user experience. A more helpful GUI would provide such operations directly, making the (sometimes extensive) changes to the IPF that are required behind the scenes. In practical terms, these operations generally involve making changes to multiple layers of the IPF: as such, it is extremely helpful to define intermediate-level IPF algorithms to effect multi-layer splits and merges. These are known as \emph{unzip node} (or simply \emph{unzipping}) and \emph{zip chains} (or simply \emph{zipping}), respectively, because the changes they make conceptually involve pulling apart different branches of the IPF and tying them to other branches of the IPF.
 
+If the four primitive algorithms are implemented as undoable commands (see \cite{gamma95} for a discussion of the Command Pattern, and \S3.3.2 of \cite{golodetz06} for a formal specification of a suitable command manager implementation), then both unzipping and zipping can be implemented as composite commands, allowing them to be undone by the simple expedient of undoing their constituent operations in reverse order. For more details, see \cite{golodetz11}.
+
 \subsection{Unzip Node}
 
-TODO
+A node in any layer of the IPF can be unzipped to a specified higher layer (or the top of the IPF). This `separates out' the branch from the higher layer down to the specified node -- it performs a multi-layer split, with a set containing the node in question as one of the groups at each stage. The other groups for each split are defined to be the connected components of what is left of the node being split after removing the node being unzipped from consideration. See Figure~\ref{fig:ipfs-forest-unzipping} for an example.
+
+Unzipping takes as input the node to be unzipped and the (higher) layer to which to unzip it. It returns a set of chains that could in theory be zipped together in order to undo the operation, although (as previously mentioned) undo is actually handled automatically when unzipping is implemented as a composite command. A \emph{chain} is a sequence of nodes $[n_h,...,n_\ell]$, where $h \ge \ell$, $n_i$ is in layer $i$ and $\forall i \in [\ell,h) \cdot parent(n_i) = n_{i+1}$. It should be noted that the chains returned by unzipping are not necessarily all the same length, but they all start in the same layer of the IPF.
+
+%---
+\begin{stulisting}[p]
+\caption{Unzip Node: Implementation}
+\label{code:ipfs-forest-unzipnode}
+\lstinputlisting[style=Default]{ipfs-forest-unzipnode.lst}
+\end{stulisting}
+%---
+
+The implementation of unzipping is shown in Listing~\ref{code:ipfs-forest-unzipnode}. As the algorithm progresses, we keep track of node chains that represent the strands being unzipped: these will be what is eventually returned as the result. In each iteration of the loop, we keep track of a `current' node, initially the input node. We determine the siblings of this node (defined to be the other children of its parent) and calculate their connected components. To these we add a singleton component containing the current node itself. We then split the parent of the current node into the specified components, update the aforementioned chains and repeat the process with the parent of the current node. The loop terminates when we reach the user-specified target layer.
+
+The construction of the chains is the most interesting part of the algorithm. The way in which this works can be seen by stepping through the unzipping example in Figure~\ref{fig:ipfs-forest-unzipping}. Initially, the array of chains is initialised with a singleton chain containing only the node being unzipped: in this case $(0,5)$.\footnotemark{} During each iteration of the loop, each node resulting from that iteration's split node operation will either be used to augment an existing chain, or to add a new one: specifically, each existing chain is prepended with the parent of its head node, which is then removed from the set of nodes resulting from the split (it is guaranteed to be present because of the way the algorithm works); the remaining nodes resulting from the split are then used to create new singleton chains. In this example, the first iteration of the loop (in which $\mathtt{cur} = (0,5)$, $\mathtt{parent} = (1,2)$, $\mathtt{components} = [\{2\},\{5\}]$ and $\mathtt{result} = \{(1,2),(1,5)\}$) results in $\mathtt{chains}$ being set to $[[(1,5),(0,5)],[(1,2)]]$. The third iteration (in which $\mathtt{cur} = (2,5)$, $\mathtt{parent} = (3,2)$, $\mathtt{components} = [\{2\},\{5\},\{8\}]$ and $\mathtt{result} = \{(3,2),(3,5),(3,8)\}$) results in $\mathtt{chains}$ being set to $[[(3,5),(2,5),(1,5),(0,5)],[(3,2),(2,2),(1,1)],[(3,8),(2,8)]]$. Finally, $(0,5)$ is removed from the first chain, leaving the final chains to be returned by the algorithm as $[[(3,5),(2,5),(1,5)],[(3,2),(2,2),(1,1)],[(3,8),(2,8)]]$.
+
+%The second iteration (in which $\mathtt{cur} = (1,5)$, $\mathtt{parent} = (2,2)$, $\mathtt{components} = [\{2\},\{5\},\{8\}]$ and $\mathtt{result} = \{(2,2),(2,5),(2,8)\}$) results in $\mathtt{chains}$ being set to $[[(2,5),(1,5),(0,5)],[(2,2),(1,2)],[(2,8)]]$.
+
+\footnotetext{This is an implementation trick that ensures that the chain leading up from the node being unzipped is the first chain in the array: this allows it to be easily identified by algorithms such as \texttt{merge\_nonsibling\_nodes} that need ready access to it (they would otherwise have to search through all the chains to find it). The final chain should not contain the actual node being unzipped (only the nodes above it), so in practice we remove it from the end of the chain again before returning.}
+
+\begin{table*}[t]
+\caption{Stepping through the unzipping example}
+\label{tbl:ipfs-forest-unzipping}
+\begin{tabular}{|l||l|l|l|l|l|}
+\hline
+\textbf{Stage} & \textbf{cur} & \textbf{parent} & \textbf{components} & \textbf{result} & \textbf{chains} \\
+\hline
+Iteration $1$ & $(0,5)$ & $(1,2)$ & $[\{2\},\{5\}]$ & $\{(1,2),(1,5)\}$ & $[[(1,5),(0,5)],[(1,2)]]$ \\
+Iteration $2$ & $(1,5)$ & $(2,2)$ & $[\{2\},\{5\},\{8\}]$ & $\{(2,2),(2,5),(2,8)\}$ & $[[(2,5),(1,5),(0,5)],[(2,2),(1,2)],[(2,8)]]$ \\
+Iteration $3$ & $(2,5)$ & $(3,2)$ & $[\{2\},\{5\},\{8\}]$ &  $\{(3,2),(3,5),(3,8)\}$ & $[[(3,5),(2,5),(1,5),(0,5)],[(3,2),(2,2),(1,1)],[(3,8),(2,8)]]$ \\
+Final & --- & --- & --- & --- & $[[(3,5),(2,5),(1,5)],[(3,2),(2,2),(1,1)],[(3,8),(2,8)]]$ \\
+\hline
+\end{tabular}
+\end{table*}
 
 %---
 \begin{stusubfig}{p}
@@ -235,14 +270,6 @@ TODO
 \caption{An example of unzipping: unzipping node $(0,5)$ to layer $3$}
 \label{fig:ipfs-forest-unzipping}
 \end{stusubfig}
-%---
-
-%---
-\begin{stulisting}[p]
-\caption{Unzip Node: Implementation}
-\label{code:ipfs-forest-unzipnode}
-\lstinputlisting[style=Default]{ipfs-forest-unzipnode.lst}
-\end{stulisting}
 %---
 
 \subsection{Zip Chains}

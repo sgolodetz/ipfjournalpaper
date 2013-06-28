@@ -327,14 +327,6 @@ For valid zips, we start by determining the high and low layers of the chains. A
 \label{sec:nsmerge}
 %#################################
 
-Having discussed unzipping and zipping, we are now in a position to implement the non-sibling node merging operation mentioned previously: this allows the user to merge nodes based on their adjacency in the image rather than on whether or not they share a common parent in the IPF. This is the `intuitive' merge operation that users might want to perform, but it is difficult to implement without the machinery provided by the zipping algorithms.
-
-Non-sibling node merging involves taking a set of arbitrary nodes in any layer of the hierarchy other than the lowest, dividing it into its connected components and then merging the nodes in each one individually (using a combination of unzipping and zipping). Since each component is connected, the result of each merge represents a contiguous image region. The algorithm takes as input the set of nodes to be merged, and returns the set of nodes resulting from merging each of the input's connected components (i.e.~there is one output node for each connected component of the input). See Figure~\ref{fig:ipfs-forest-nonsiblingnodemerging} for an example.
-
-The implementation is shown in Listing~\ref{code:ipfs-forest-mergenonsiblingnodes}. The first step is to calculate the connected components of the input nodes: each connected component of size $> 1$ will be merged into one result node. To perform the merge for each connected component, we first determine the common ancestor of the component's nodes. Each node is then unzipped to the layer below that containing the ancestor. In each case we keep track of the chain of nodes leading back down to the node being unzipped, appending the actual node being unzipped to the chain in each case (it would not otherwise be present). Finally, all of these chains are zipped together to merge the nodes in the connected component together.
-
-For the example in Figure~\ref{fig:ipfs-forest-nonsiblingnodemerging}, the connected components of the input nodes are $\{(1,0),(1,2)\}$ and $\{(1,6),(1,8)\}$. Both $(1,0)$ and $(1,2)$ are unzipped to layer $2$, the layer below their common ancestor $(3,0)$. The chains thus created are then zipped together, resulting in $(1,0)$ and $(1,2)$ being merged in layer $1$. An analogous process is used to merge $(1,6)$ and $(1,8)$.
-
 %---
 \begin{stulisting}[t]
 \caption{Non-Sibling Node Merging: Implementation}
@@ -342,6 +334,14 @@ For the example in Figure~\ref{fig:ipfs-forest-nonsiblingnodemerging}, the conne
 \lstinputlisting[style=Default]{ipfs-forest-mergenonsiblingnodes.lst}
 \end{stulisting}
 %---
+
+Having discussed unzipping and zipping, we are now in a position to implement the non-sibling node merging operation mentioned previously: this allows the user to merge nodes based on their adjacency in the image rather than on whether or not they share a common parent in the IPF. This is the `intuitive' merge operation that users might want to perform, but it is difficult to implement without the machinery provided by the zipping algorithms.
+
+Non-sibling node merging involves taking a set of arbitrary nodes in any layer of the hierarchy other than the lowest, dividing it into its connected components and then merging the nodes in each one individually (using a combination of unzipping and zipping). Since each component is connected, the result of each merge represents a contiguous image region. The algorithm takes as input the set of nodes to be merged, and returns the set of nodes resulting from merging each of the input's connected components (i.e.~there is one output node for each connected component of the input). See Figure~\ref{fig:ipfs-forest-nonsiblingnodemerging} for an example.
+
+The implementation is shown in Listing~\ref{code:ipfs-forest-mergenonsiblingnodes}. The first step is to calculate the connected components of the input nodes: each connected component of size $> 1$ will be merged into one result node. To perform the merge for each connected component, we first determine the common ancestor of the component's nodes. Each node is then unzipped to the layer below that containing the ancestor. In each case we keep track of the chain of nodes leading back down to the node being unzipped, appending the actual node being unzipped to the chain in each case (it would not otherwise be present). Finally, all of these chains are zipped together to merge the nodes in the connected component together.
+
+For the example in Figure~\ref{fig:ipfs-forest-nonsiblingnodemerging}, the connected components of the input nodes are $\{(1,0),(1,2)\}$ and $\{(1,6),(1,8)\}$. Both $(1,0)$ and $(1,2)$ are unzipped to layer $2$, the layer below their common ancestor $(3,0)$. The chains thus created are then zipped together, resulting in $(1,0)$ and $(1,2)$ being merged in layer $1$. An analogous process is used to merge $(1,6)$ and $(1,8)$.
 
 %---
 \begin{stusubfig}{p}
@@ -363,6 +363,14 @@ For the example in Figure~\ref{fig:ipfs-forest-nonsiblingnodemerging}, the conne
 \section{User Interaction}
 \label{sec:ui}
 %#########################
+
+In this section, we illustrate the practicality of the algorithms in this paper by presenting a concrete implementation of them in \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation. We also evaluate the benefits of the non-sibling node merging algorithm from the user's perspective, demonstrating in particular that non-sibling node merging (a) considerably reduces the interactivity burden on the user for individual merges, and (b) is needed for a significant proportion of the potential merges that a user might want to perform.
+
+\subsection{Concrete Implementation}
+
+TODO
+
+\subsection{Evaluation}
 
 TODO
 

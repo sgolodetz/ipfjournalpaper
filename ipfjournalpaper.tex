@@ -42,6 +42,17 @@
 	\end{figure}
 }
 
+\newcommand{\stufigexx}[5]				% full-width images with specified placement
+{
+	\begin{figure*}[#5]
+	\begin{center}
+		\includegraphics[#1]{#2}
+		\caption{#3}
+		\label{#4}
+	\end{center}
+	\end{figure*}
+}
+
 % Define the stusubfig environment
 \newenvironment{stusubfig}[1]
 {
@@ -371,6 +382,11 @@ In this section, we illustrate the practicality of the algorithms in this paper 
 TODO
 
 \subsection{Evaluation}
+\label{subsec:ui-evaluation}
+
+%---
+\stufigexx{width=.6\linewidth}{pairwisenodemerges.png}{The percentages of pairwise merges of nodes in various IPFs (all with $5$ branch layers) that require different levels of unzipping (see \S\ref{subsec:ui-evaluation}).}{fig:pairwisenodemerges}{p}
+%---
 
 TODO
 

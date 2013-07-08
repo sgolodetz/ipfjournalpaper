@@ -394,18 +394,6 @@ In order to demonstrate the need for non-sibling node merging and its effectiven
 \item For each IPF, there was a high cumulative percentage ($> 70\%$) of node pairs that required at least one level of unzipping to merge (i.e~that involved \emph{non-sibling} node merging). There was also a relatively high cumulative percentage ($\approx 50\%$) of node pairs that required at least two levels of unzipping to merge. As such, not only do the majority of the potential merges the user might want to perform involve non-sibling node merging, they often involve changes that require multiple levels of unzipping. This is costly in a number of different ways: each individual node split that is required as part of the unzip operation has relatively high input requirements (recall the need to specify the split components), there are corresponding sibling node merges to be performed, and keeping track of the changes required to the IPF without an easy way to visualise the parent-child links carries a high cognitive overhead. Whilst we could circumvent this problem by simply restricting the user to sibling-only node merging, this would prohibit many useful merges. This motivates the development of a non-sibling node merging algorithm of the kind described in this paper: with such an algorithm available, each pairwise node merge becomes a simple operation in the UI (select the two nodes and click to merge).
 
 \item In reality, many node merges are not pairwise -- the user often wants to combine many regions of the image at once. In this case, there is an even higher probability that multiple levels of unzipping will be required.
-
-%To see why, let $P(n_1,...,n_k)$ be the probability that merging nodes $n_1,...,n_k$ will involve at least two levels of unzipping. Then (from the data) $P(n_i,n_j) \approx \frac{1}{2}$, and based on an assumption of independence:
-%
-%\[
-%P(n_1,...,n_k) = 1 - \frac{1}{2}^{{}^kC_2}
-%\]
-%
-%To see why, take the probability that the merge of two arbitrary adjacent nodes $n_i$ and $n_j$ will involve at least two levels of unzip to be around $\frac{1}{2}$, and make the reasonable (if not wholly true) assumption of independence between pairwise node merges. If $P(n_1,...,n_k)$ is the probability 
-
-%Restricting the user to sibling-only node merging would thus prohibit the majority of the potential merges they might want to perform. Bearing in mind the relatively high input requirements for splitting nodes, and the consequent costs of performing a non-sibling node merge manually as a sequence of node splits and sibling node merges, there is hence a need for a less restrictive merge algorithm of the kind described in this paper.
-
-%\item For each IPF, there was also a relatively high cumulative percentage ($\approx 50\%$) of node pairs that required at least two levels of unzipping to merge. That is, around half of all the pairwise node merges the user might want to perform on the analysed IPFs would be particularly difficult and time-consuming to effect without non-sibling node merging. With non-sibling node merging, each pairwise node merge would be a simple operation in the UI (select the two nodes and click to merge), with the potential to 
 \end{itemize}
 %
 

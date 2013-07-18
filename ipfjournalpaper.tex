@@ -75,7 +75,7 @@
 
 % Setup before using the listings package
 \renewcommand{\lstlistingname}{\textbf{Listing}}
-\newcommand{\thelstlisting}{\textbf{\arabic{lstlisting}}}
+\renewcommand{\thelstlisting}{\textbf{\arabic{lstlisting}}}
 
 \lstdefinelanguage{Pseudocode}{
 morekeywords={and,assert,break,case,continue,default,down,each,else,for,function,if,not,null,or,rangeswitch,ref,return,switch,then,this,throw,to,up,var,while},
@@ -143,8 +143,11 @@ tabsize=4
 
 \begin{document}
 
-\title{The Use of Zipping Algorithms to Facilitate Interaction with Image Partition Forests}
+%\title{The Use of Zipping Algorithms to Facilitate Interaction with Image Partition Forests}
+\title{Zipping Partition Forests to Edit Segmented Images}
+
 \author{Stuart Golodetz, Irina Voiculescu and Stephen Cameron}
+
 \date{\today}
 \maketitle
 
@@ -170,7 +173,33 @@ One type of segmentation result that can provide a great deal of useful informat
 
 \footnotetext{The same data structure has appeared elsewhere in the literature under a variety of other names, e.g.~hierarchy of (region adjacency) graphs \cite{kropatsch04,nacken95,shen97}, hierarchical attributed region adjacency graph \cite{fischer04}, hierarchy of partitions \cite{haxhimusa03,lezoray06}, picture tree \cite{andrade03}, graph pyramid \cite{kerren06}, bounded irregular pyramid \cite{marfil07} and segmentation graph \cite{borenstein06}.}
 
-However, despite the ubiquitous nature of the data structure itself in the literature, comparatively little research appears to have been done in the past into ways of conveniently editing an IPF after it has been constructed. (One notable exception to this is \cite{nacken95}, in which Nacken describes an approach to the problem of what he calls \emph{connectivity-preserving relinking} -- we tackled the same problem in a slightly more general way as \emph{parent switching}, or how to change the hierarchy so as to move a region from being the child of one parent to the child of another, as described in \cite{golodetz11}.) This is unfortunate, because it limits the applicability of techniques that automatically produce such results in domains such as medical imaging where the later introduction of expert knowledge is important. For that reason, this paper presents a number of the algorithms first described in \cite{golodetz11} for facilitating such editing, most notably multi-level split and merge algorithms known respectively as \emph{unzipping} and \emph{zipping}, and a \emph{non-sibling node merging} algorithm that allows the user to conveniently merge image-adjacent nodes in a GUI without worrying about the underlying structure of the IPF. A complete set of IPF algorithms, together with detailed implementations, can be found in \cite{golodetz11}.
+% this can go into the conclusions
+However, despite the ubiquitous nature of the data structure itself in
+the literature, comparatively little research appears to have been
+done in the past into ways of conveniently editing an IPF after it has
+been constructed.
+
+(One notable exception to this is \cite{nacken95}, in which Nacken
+describes an approach to the problem of what he calls
+\emph{connectivity-preserving relinking} -- we tackled the same
+problem in a slightly more general way as \emph{parent switching}, or
+how to change the hierarchy so as to move a region from being the
+child of one parent to the child of another, as described in
+\cite{golodetz11}.) 
+
+This is unfortunate, because it limits the applicability of techniques
+that automatically produce such results in domains such as medical
+imaging where the later introduction of expert knowledge is
+important.
+
+{\bf This paper presents a number of the algorithms for facilitating
+  such editing. In particular, we discuss multi-level split and merge
+algorithms known respectively as \emph{unzipping} and \emph{zipping},
+and a \emph{non-sibling node merging} algorithm that allows the user
+to conveniently merge image-adjacent nodes in a GUI without worrying
+about the underlying structure of the IPF. A complete set of IPF
+algorithms, together with detailed implementations, can be found in
+\cite{golodetz11}.}
 
 The organisation of this paper is as follows: in \S\ref{sec:ipfs}, we provide a detailed description of the IPF data structure and outline the basic algorithms that can be performed upon it; in \S\ref{sec:zipping}, we present zipping algorithms for IPFs; in \S\ref{sec:nsmerge}, we present an algorithm for merging image-adjacent nodes; in \S\ref{sec:ui}, we demonstrate how our IPF algorithms can be used to facilitate user interaction by analysing a practical implementation of them in \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation; and in \S\ref{sec:conclusions}, we conclude.
 
@@ -401,6 +430,20 @@ In order to demonstrate the need for non-sibling node merging and its effectiven
 \section{Conclusions}
 \label{sec:conclusions}
 %######################
+
+Despite the ubiquitous nature of IPFs in the literature, comparatively
+little research appears to have been done in the past into ways of
+conveniently editing one after it has been constructed.
+
+We have fixed this 
+
+These are basic algorithms but have immediate applications
+
+Zipping and unzipping are instrumental to other segmentation--related
+algorithms, such as raising a region to a higer layer, etc.
+
+This has been a description of an abstract data type, but of course
+the applications are unlimited in scope and wonderful.
 
 TODO
 

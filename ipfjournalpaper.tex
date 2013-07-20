@@ -174,7 +174,7 @@ Due to their usefulness, IPFs as a data structure have appeared widely in the li
 
 %However, despite the ubiquitous nature of the data structure itself in the literature, comparatively little research appears to have been done in the past into ways of conveniently editing an IPF after it has been constructed. (One notable exception to this is \cite{nacken95}, in which Nacken describes an approach to the problem of what he calls \emph{connectivity-preserving relinking} -- we tackled the same problem in a slightly more general way as \emph{parent switching}, or how to change the hierarchy so as to move a region from being the child of one parent to the child of another, as described in \cite{golodetz11}.) This is unfortunate, because it limits the applicability of techniques that automatically produce such results in domains such as medical imaging where the later introduction of expert knowledge is important. For that reason, this paper presents a number of the algorithms first described in \cite{golodetz11} for facilitating such editing, most notably multi-level split and merge algorithms known respectively as \emph{unzipping} and \emph{zipping}, and a \emph{non-sibling node merging} algorithm that allows the user to conveniently merge image-adjacent nodes in a GUI without worrying about the underlying structure of the IPF. A complete set of IPF algorithms, together with detailed implementations, can be found in \cite{golodetz11}.
 
-\textbf{The organisation of this paper} is as follows: in \S\ref{sec:ipfs}, we provide a detailed description of the IPF data structure and outline the basic algorithms that can be performed upon it; in \S\ref{sec:zipping}, we present zipping algorithms for IPFs; in \S\ref{sec:nsmerge}, we present an algorithm for merging image-adjacent nodes; in \S\ref{sec:ui}, we demonstrate how our IPF algorithms can be used to facilitate user interaction by analysing a practical implementation of them in \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation; and in \S\ref{sec:conclusions}, we conclude.
+\textbf{The organisation of this paper} is as follows: in \S\ref{sec:ipfs}, we provide a detailed description of the IPF data structure and outline the basic algorithms that can be performed upon it; in \S\ref{sec:zipping}, we present zipping algorithms for IPFs; in \S\ref{sec:nsmerge}, we present an algorithm for merging image-adjacent nodes; in \S\ref{sec:analysis}, we demonstrate how our IPF algorithms can be used to facilitate user interaction by analysing a practical implementation of them in \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation; and in \S\ref{sec:conclusions}, we conclude.
 
 %################################
 \section{Image Partition Forests}
@@ -373,14 +373,18 @@ For the example in Figure~\ref{fig:ipfs-forest-nonsiblingnodemerging}, the conne
 %---
 
 %#########################
-\section{User Interaction}
-\label{sec:ui}
+\section{Analysis}
+\label{sec:analysis}
 %#########################
 
-In this section, we demonstrate the benefits of the algorithms in this paper to a user by analysing a concrete implementation of them in \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation. We show in particular that non-sibling node merging (a) is needed for a significant proportion of the potential merges that a user might want to perform, and (b) considerably reduces the interactivity burden on the user for individual merges.
+In this section, we demonstrate the benefits of the algorithms in this paper to a user by analysing a concrete implementation of them in \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation (see Figure~\ref{fig:millipede}). We show in particular that non-sibling node merging (a) is needed for a significant proportion of the potential merges that a user might want to perform, and (b) considerably reduces the interactivity burden on the user for individual merges.
 
 %---
-\stufigexx{width=.6\linewidth}{pairwisenodemerges.png}{The percentages of pairwise merges of nodes in various IPFs (all with $5$ branch layers) that require different levels of unzipping (see \S\ref{sec:ui}).}{fig:pairwisenodemerges}{p}
+\stufigexx{width=.6\linewidth}{millipede.png}{The segmentation window of \emph{millipede}, showing the original CT image (left) and one of the layers of the corresponding IPF (right).}{fig:millipede}{p}
+%---
+
+%---
+\stufigexx{width=.6\linewidth}{pairwisenodemerges.png}{The percentages of pairwise merges of nodes in various IPFs (all with $5$ branch layers) that require different levels of unzipping (see \S\ref{sec:analysis}).}{fig:pairwisenodemerges}{p}
 %---
 
 To perform our analysis, we modified the \emph{millipede} software to calculate the number of levels of unzipping that would be required to merge each adjacent pair of nodes in an IPF. (Nodes with the same parent require no unzipping, and can thus be merged by the sibling node merge algorithm; nodes whose parents differ must be unzipped up to their common ancestor as part of a non-sibling node merge.) We calculated how many levels of unzipping were required for all adjacent node pairs in the IPFs of three 3D image datasets (BT, MC and SD) of size $512 \times 512 \times 11$ (see Figure~\ref{fig:pairwisenodemerges}). Each IPF contained $5$ branch layers in addition to its leaf layer. This led to the following observations:

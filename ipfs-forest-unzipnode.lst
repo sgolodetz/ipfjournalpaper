@@ -3,7 +3,7 @@ function unzip_node
 	 checkPreconditions : CheckPreconditions)
 	 $\to$ Vector<Chain>
 
-if checkPreconditions = CHECK_PRECONDITIONS then
+if checkPreconditions = CHECK then
 	// Check that the specified node is valid.
 	var layer : ForestLayer? :=
 		checked_forest_layer(node.layer());
@@ -42,7 +42,7 @@ while cur.layer() $\ne$ toLayer
 	// Add in the component {cur} and split the parent node.
 	ccs.push_back({cur});
 	var result : Set<NodeID> := split_node(
-		parent, ccs, DO_NOT_CHECK_PRECONDITIONS
+		parent, ccs, NO_CHECK
 	);
 
 	// Update the chains.
@@ -62,9 +62,7 @@ while cur.layer() $\ne$ toLayer
 	cur := parent_of(cur);
 
 // The first chain incorrectly contains the node being
-// unzipped as its last node at this point (we added it
-// above to make sure that the chain from that node was
-// the first in the vector), so we remove it.
+// unzipped as its last node at this point, so remove it.
 chains.front().pop_back();
 
 end_command_sequence();

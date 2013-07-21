@@ -3,13 +3,12 @@ function zip_chains
 	 checkPreconditions : CheckPreconditions)
 	 $\to$ (NodeID, int)
 
-if checkPreconditions = CHECK_PRECONDITIONS then
+if checkPreconditions = CHECK then
 	// Check that there are chains to zip.
 	if chains.empty() then throw;
 
 	// Check that each chain is non-empty and doesn't
-	// extend down as far as the bottom layer of the
-	// hierarchy.
+	// extend down as far as the bottom layer.
 	var lowLayer : int := $\infty$;
 	for each chain : Chain $\in$ chains
 		if chain.empty() then throw;
@@ -45,8 +44,7 @@ for each chain $\in$ chains
 	lowLayer = min(lowLayer, chain.back().layer());
 
 // Perform a sibling node merge on the nodes in each
-// layer, starting from the high layer and working
-// downwards.
+// layer, starting from the high layer.
 var mergeResult : NodeID;
 for layer : int := highLayer down to lowLayer
 	var nodes : Set<NodeID>;
@@ -55,9 +53,7 @@ for layer : int := highLayer down to lowLayer
 			nodes.insert(NodeID(
 				layer, chain[highLayer - layer].index()
 			));
-	mergeResult := merge_sibling_nodes(
-		nodes, DO_NOT_CHECK_PRECONDITIONS
-	);
+	mergeResult := merge_sibling_nodes(nodes, NO_CHECK);
 
 end_command_sequence();
 return (mergeResult, highLayer);

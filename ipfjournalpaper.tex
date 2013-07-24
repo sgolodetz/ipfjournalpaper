@@ -137,6 +137,14 @@ stepnumber=1,
 tabsize=4
 }
 
+%%%%%%%%%%%%%%%%%%%%
+% Special Commands %
+%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\svlis}{%
+\mbox{\scriptsize S\hspace{-0.2mm}\footnotesize V\hspace{-0.2mm}%
+\normalsize L\hspace{0.1mm}\footnotesize I\hspace{0.2mm}\scriptsize S\ }}
+
 %%%%%%%%%%%%%%%%%
 % Main Document %
 %%%%%%%%%%%%%%%%%
@@ -149,7 +157,7 @@ tabsize=4
 \maketitle
 
 \begin{abstract}
-\noindent The segmentation of images and the subsequent identification of key features therein are important components of applications in a variety of contexts, including those such as medical imaging where extremely high levels of accuracy are required. However, both segmentation and feature identification remain challenging to completely automate, and so there is often a need for domain specialists to be able to edit the results produced by automatic tools; evidently the editing methods used depend strongly on how the results are represented. One helpful representation is the \emph{image partition forest} (IPF), or region hierarchy, a tree-like data structure in which each node represents a contiguous region of the image. Unfortunately, since little research attention has been devoted in the past to ways of interacting with IPFs, it can be difficult for domain specialists to make changes to them after they have been built -- this imposes much higher accuracy requirements on tools that produce them, since those with the expert knowledge needed to correct any mistakes made by the tools are actively prevented from doing so. In this paper, we therefore present a set of algorithms that can be used to facilitate interactive changes to IPFs. The algorithms were implemented as a core part of \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation, and we highlight in particular the way in which the user experience was improved as a result.
+\noindent The segmentation of images and the subsequent identification of key features therein are important components of applications in a variety of contexts, including those such as medical imaging where extremely high levels of accuracy are required. However, both segmentation and feature identification remain challenging to completely automate, and so there is often a need for domain specialists to be able to edit the results produced by automatic tools; evidently the editing methods used depend strongly on how the results are represented. One helpful representation is the \emph{image partition forest} (IPF), or region hierarchy, a tree-like data structure in which each node represents a contiguous region of the image. Unfortunately, since little research attention has been devoted in the past to ways of interacting with IPFs, it can be difficult for domain specialists to make changes to them after they have been built -- this imposes much higher accuracy requirements on tools that produce them, since those with the expert knowledge needed to correct any mistakes made by the tools are actively prevented from doing so. We therefore present a set of algorithms that can be used to facilitate interactive changes to IPFs. The algorithms were implemented as a core part of \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation, and we highlight in particular the way in which the user experience was improved as a result.
 \end{abstract}
 
 %#####################
@@ -162,13 +170,13 @@ Image segmentation, the problem of how to partition an image into regions that h
 
 Depending on the kind of segmentation method (see \cite{golodetz11} for a survey), its result can be represented in a variety of different ways and require varying different methods of interaction. For example, editing a segmentation produced by a thresholding approach might involve changing the threshold value and re-segmenting the image, whereas editing a segmentation produced by a snakes approach (e.g.~\cite{kass88,lobregt95}) might involve a human user dragging the snake contour around using a graphical user interface. Choosing a segmentation method inevitably involves balancing various competing criteria (see e.g.~Table 3.1 of \cite{golodetz11}) -- notably, here, methods can produce results that are useful but hard to edit.
 
-One type of segmentation result that can provide a great deal of useful information for further processing is what we call the \emph{image partition forest} (IPF) representation, which represents an image as a hierarchy of partitions (the details of this representation will be described in \S\ref{sec:ipfs}). This representation is useful because it consists of related segmentations of the image at different scales, providing a helpful space in which to search for regions corresponding to image features of different sizes. An IPF can be produced as the result of a number of different segmentation approaches, and detailed techniques for constructing one using watershed/waterfall segmentation are described in \cite{golodetz11}.
+One type of segmentation result that can provide a great deal of useful information for further processing is what we call the \emph{image partition forest} (IPF) representation, which represents an image as a hierarchy of partitions (\S\ref{sec:ipfs}). This representation is useful because it consists of related segmentations of the image at different scales, providing a helpful space in which to search for regions corresponding to image features of different sizes. An IPF can be produced as the result of a number of different segmentation approaches, and detailed techniques for constructing one using watershed/waterfall segmentation are described in \cite{golodetz11}.
 
 Due to their usefulness, IPFs as a data structure have appeared widely in the literature under a variety of names, e.g.~hierarchy of (region adjacency) graphs \cite{kropatsch04,nacken95,shen97}, hierarchical attributed region adjacency graph \cite{fischer04}, hierarchy of partitions \cite{haxhimusa03,lezoray06}, picture tree \cite{andrade03}, graph pyramid \cite{kerren06}, bounded irregular pyramid \cite{marfil07} and segmentation graph \cite{borenstein06}. However, IPFs can be hard for users to change due to their tree-like structure -- comparatively little research appears to have been done into how to edit them in terms of the underlying image rather than the region hierarchy they represent. This is unfortunate, because it limits the applicability of techniques that automatically produce IPFs in domains such as medical imaging where the later introduction of expert knowledge is important.
 
-\textbf{This paper} presents a number of algorithms for facilitating convenient IPF editing. Most notably, it deals with multi-level split and merge algorithms known respectively as \emph{unzipping} and \emph{zipping}, and with a \emph{non-sibling node merging} algorithm that allows the user to conveniently merge image-adjacent nodes in a GUI without worrying about the underlying structure of the IPF. A complete set of our IPF algorithms, together with detailed implementations, can be found in \cite{golodetz11}, where we also describe an algorithm for \emph{parent switching} (how to change an IPF so as to move a region from being the child of one parent to the child of another). This latter algorithm provides a generalised approach to the problem of \emph{connectivity-preserving relinking} described by Nacken in \cite{nacken95}.
+\textbf{This paper} presents a number of algorithms for facilitating convenient IPF editing. Most notably, it deals with multi-level split and merge algorithms known respectively as \emph{unzipping} and \emph{zipping}, and with a \emph{non-sibling node merging} algorithm that allows the user to conveniently merge image-adjacent nodes in a graphical user interface (GUI) without worrying about the underlying structure of the IPF. A complete set of our IPF algorithms, together with detailed implementations, can be found in \cite{golodetz11}, where we also describe an algorithm for \emph{parent switching} (how to change an IPF so as to move a region from being the child of one parent to the child of another). This latter algorithm provides a generalised approach to the problem of \emph{connectivity-preserving relinking} described by Nacken in \cite{nacken95}.
 
-\textbf{The organisation of this paper} is as follows: in \S\ref{sec:ipfs}, we provide a detailed description of the IPF data structure and outline the basic algorithms that can be performed upon it; in \S\ref{sec:zipping}, we present zipping algorithms for IPFs; in \S\ref{sec:nsmerge}, we present an algorithm for merging image-adjacent nodes; in \S\ref{sec:analysis}, we demonstrate how our IPF algorithms can be used to facilitate user interaction by analysing a practical implementation of them in \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation; and in \S\ref{sec:conclusions}, we conclude.
+\textbf{The organisation of this paper} is as follows: in \S\ref{sec:ipfs}, we provide a detailed description of the IPF data structure and outline the basic algorithms that can be performed upon it; in \S\ref{sec:zipping} and \S\ref{sec:nsmerge}, we present the zipping and non-sibling node merging algorithms for IPFs; and in \S\ref{sec:analysis}, we demonstrate how our IPF algorithms can be used to facilitate user interaction by analysing a practical implementation of them in \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation.
 
 %################################
 \section{Image Partition Forests}
@@ -187,7 +195,7 @@ An image partition forest (or IPF) is a hierarchy of adjacency graphs that all p
 \stufigex{width=.85\linewidth}{ipfs-ctconcept.png}{An example partition forest for an abdominal CT scan}{fig:ipfs-ctconcept}{htb}
 %---
 
-Each node in an IPF can have a set of properties associated with it, shown as blue text in Figure~\ref{fig:ipfs-concept}. Properties of nodes in the leaf layer (which correspond to individual pixels in the image) can be assigned arbitrarily, but properties of nodes in branch layers must be functions of the properties of their children in the layer below. In this example, a single, arbitrary value has been associated with each node in the leaf layer of the IPF. Nodes in higher layers have been given a `mean value' property that is calculated from the values of the subsumed leaf nodes.
+Each node in an IPF can have a set of properties associated with it, shown as blue text in Figure~\ref{fig:ipfs-concept}. Properties of nodes in the leaf layer (which correspond to individual pixels in the image) can be assigned arbitrarily, but properties of nodes in branch layers must be functions of the properties of their children in the layer below. In this example, a single, arbitrary value has been associated with each node in the leaf layer of the IPF. Nodes in higher layers have been given a `mean value' property that is calculated from the values of the subsumed leaf nodes. In Figure~\ref{fig:ipfs-ctconcept}, each leaf node has a `grey value' property associated with it that is simply the value of the corresponding image pixel; each branch node is then assigned a `mean grey value' property, namely the mean of the grey values of the pixels its region contains.
 
 Each layer also contains edges between nodes whose corresponding regions are adjacent in the image. Each edge has an associated value (shown as underlined text in the figure). The values on the edges in the leaf layer can be assigned according to any scheme desired -- in this example, they represent the height of the `lowest pass point' between adjacent regions, based on the values associated with the pixels. The value on an edge between a pair of nodes in a branch layer must be a function of the values on any edges between their respective children in the layer below. In this example, the value on an edge between two nodes, $u$ and $v$, in a branch layer is calculated to be the smallest value on any edge between a child of $u$ and a child of $v$, in keeping with the lowest pass idea above.
 
@@ -195,15 +203,15 @@ In addition to the layers themselves, an IPF also contains forest links that joi
 
 \subsection{Basic Algorithms}
 
-As proved in \S4.3.1 of \cite{golodetz11}, an IPF for an image $I$ can be transformed into any other IPF for $I$ by the repeated application of three basic algorithms: layer cloning, layer deletion and sibling node merging. For efficiency, we also add node splitting to this list, since it would be extremely inefficient (though possible) to implement node splitting in terms of the other three operations. Whilst full details of these algorithms (including how to implement them in a GUI environment) are given in \cite{golodetz11}, we nevertheless briefly describe them here because they provide a necessary background to the higher-level algorithms that follow.
+As proved in \S4.3.1 of \cite{golodetz11}, an IPF for an image $I$ can be transformed into any other IPF for $I$ by the repeated application of three basic algorithms: layer cloning, layer deletion and sibling node merging. For efficiency, we also add node splitting to this list, since it would be extremely inefficient to implement node splitting in terms of the other three operations. Whilst full details of these algorithms (including how to implement them in a GUI environment) are given in \cite{golodetz11}, we nevertheless briefly describe them here because they provide a necessary background to the higher-level algorithms that follow. Note that all of these operations can be `made undoable' by caching some information as they are performed; this is generally useful to a user as they can then try out operations and reverse them at will.
 
-\emph{Layer Cloning}. Any layer in the IPF can be cloned so as to insert a layer just above it with an identical adjacency graph. This is used to introduce a `new' partition of the underlying image that can be edited without affecting the existing partitions. The forest links between the layer being cloned, the clone and any layer above the insertion point are updated accordingly. The operation can be undone by deleting the newly-inserted clone layer.
+\emph{Layer Cloning}. Any layer in the IPF can be cloned so as to insert a layer just above it with an identical adjacency graph. This is used to introduce a `new' partition of the underlying image that can be edited without affecting the existing partitions. The forest links between the layer being cloned, the clone and any layer above the insertion point are updated accordingly.
 
-\emph{Layer Deletion}. Any layer in the IPF except the leaf layer can be deleted from the hierarchy. This is used to remove a partition of the underlying image that is no longer of use, e.g.~because it does not contain any regions that are of interest for feature identification or because the useful regions it does contain are also present in other layers. Any forest links that reference the deleted layer are removed, and new forest links are added where necessary between any layers on either side of the one being deleted. For the operation to be undoable, it is necessary to cache the layer when originally deleting it. The operation can then be undone by reinserting the layer into its original place in the hierarchy and recreating the forest links between it and the layers on either side of it (the information required to do this is present in the deleted layer).
+\emph{Layer Deletion}. Any layer in the IPF except the leaf layer can be deleted from the hierarchy. This is used to remove a partition of the underlying image that is no longer of use, e.g.~because it does not contain any regions that are of interest for feature identification or because the useful regions it does contain are also present in other layers. Any forest links that reference the deleted layer are removed, and new forest links are added where necessary between any layers on either side of the one being deleted.
 
-\emph{Node Splitting}. Nodes in any branch layer of the IPF can be split into multiple nodes representing smaller contiguous image regions. This is used to divide regions that are not meaningful for feature identification into smaller ones that might be more useful. The algorithm takes as input the node to be split and a set of groups of its children into which to split it. Intuitively, the node being split is removed, a new node is created to be the parent of each such group, and the adjacency graph and forest links are updated accordingly. The operation can be undone by performing a sibling node merge on the results of the split.
+\emph{Node Splitting}. Nodes in any branch layer of the IPF can be split into multiple nodes representing smaller contiguous image regions. This is used to divide regions that are not meaningful for feature identification into smaller ones that might be more useful. The algorithm takes as input the node to be split and a set of groups of its children into which to split it. Intuitively, the node being split is removed, a new node is created to be the parent of each such group, and the adjacency graph and forest links are updated accordingly.
 
-\emph{Sibling Node Merging}. Sibling nodes in any branch layer of the IPF can be merged provided that the union of the image regions they represent is a contiguous region (this preserves the invariant that every node in the IPF represents a contiguous region). This is used to merge sibling regions that are not meaningful for feature identification into larger regions that might be more useful. A set of nodes are siblings if they either all have the same parent, or all have no parent (because they are in the top-most layer of the IPF). The details of how the algorithm can be implemented can be found in \cite{golodetz11}. To make the operation undoable, it is necessary to store the children of each of the nodes to be merged prior to performing the merge. The operation can then be undone using a node split, passing the child sets as input.
+\emph{Sibling Node Merging}. Sibling nodes in any branch layer of the IPF can be merged provided that the union of the image regions they represent is a contiguous region (this preserves the invariant that every node in the IPF represents a contiguous region). This is used to merge sibling regions that are not meaningful for feature identification into larger regions that might be more useful. A set of nodes are siblings if they either all have the same parent, or all have no parent (because they are in the top-most layer of the IPF).
 
 Sibling node merging is an important low-level operation, but it is inconvenient to use in the context of a user interface for IPF editing because it forces the user to think about the underlying hierarchical structure of the IPF. As the user of such a system, it is far more common to want to merge nodes that are adjacent in the image than to want to merge nodes that are adjacent in the IPF. This is the motivation behind the development of the far more general non-sibling node merging algorithm described in \S\ref{sec:nsmerge}.
 
@@ -212,9 +220,9 @@ Sibling node merging is an important low-level operation, but it is inconvenient
 \label{sec:zipping}
 %###########################
 
-Although it would be possible to achieve effects such as merging regions that are adjacent in the image but not adjacent in the IPF by the repeated application of the four primitive algorithms, it would make for an extremely tedious user experience. A more helpful GUI would provide such operations directly, making the (sometimes extensive) changes to the IPF that are required behind the scenes. In practical terms, these operations generally involve making changes to multiple layers of the IPF: as such, it is extremely helpful to define intermediate-level IPF algorithms to effect multi-layer splits and merges. These are known as \emph{unzip node} (or simply \emph{unzipping}) and \emph{zip chains} (or simply \emph{zipping}), respectively, because the changes they make conceptually involve pulling apart different branches of the IPF and tying them to other branches of the IPF.
+Although it would be possible to achieve effects such as merging regions that are adjacent in the image but not adjacent in the IPF by the repeated application of the four primitive algorithms, it would make for an extremely tedious user experience. A more helpful GUI would provide such operations directly, making the (sometimes extensive) changes to the IPF that are required behind the scenes. In practical terms, these operations generally involve making changes to multiple IPF layers: as such, it is extremely helpful to define intermediate-level IPF algorithms to effect multi-layer splits and merges. These are known as \emph{unzip node} (or simply \emph{unzipping}) and \emph{zip chains} (or simply \emph{zipping}), respectively, because the changes they make conceptually involve pulling apart different branches of the IPF and tying them to other branches.
 
-If the four primitive algorithms are implemented as undoable commands (see \cite{gamma95} for a discussion of the Command Pattern, and \S3.3.2 of \cite{golodetz06} for a formal specification of a suitable command manager implementation), then both unzipping and zipping can be implemented as composite commands, allowing them to be undone by the simple expedient of undoing their constituent operations in reverse order. For more details, see \cite{golodetz11}.
+If the four primitive algorithms are implemented as undoable commands (see e.g.~\cite{gamma95,golodetz06}) then both unzipping and zipping can be implemented as composite commands, allowing them to be undone by the simple expedient of undoing their constituent operations in reverse order.
 
 \subsection{Unzip Node}
 
@@ -228,11 +236,11 @@ If the four primitive algorithms are implemented as undoable commands (see \cite
 
 A node in any layer of the IPF can be unzipped to a specified higher layer (or the top of the IPF). This `separates out' the branch from the higher layer down to the specified node -- it performs a multi-layer split, with a set containing the node in question as one of the groups at each stage. The other groups for each split are defined to be the connected components of what is left of the node being split after removing the node being unzipped from consideration. Unzipping is directly useful as a way of `transferring' a useful node upwards to a higher layer of the IPF; it is also an important component of higher-level algorithms such as non-sibling node merging. See Figure~\ref{fig:ipfs-forest-unzipping} for an example.
 
-Unzipping takes as input the node to be unzipped and the (higher) layer to which to unzip it. It returns a set of chains that could in theory be zipped together in order to undo the operation, although (as previously mentioned) undo is actually handled automatically when unzipping is implemented as a composite command. A \emph{chain} is a sequence of nodes $[n_h,...,n_\ell]$, where $h \ge \ell$, $n_i$ is in layer $i$ and $\forall i \in [\ell,h) \cdot parent(n_i) = n_{i+1}$. It should be noted that the chains returned by unzipping are not necessarily all the same length, but they all start in the same layer of the IPF.
+Unzipping takes as input the node to be unzipped and the (higher) layer to which to unzip it. It returns a set of chains that could in theory be zipped together in order to undo the operation, although (as previously mentioned) undo is actually handled automatically when unzipping is implemented as a composite command. A \emph{chain} is a sequence of nodes $[n_h,...,n_\ell]$, where $h \ge \ell$, $n_i$ is in layer $i$ and $\forall i \in [\ell,h) \cdot parent(n_i) = n_{i+1}$. It should be noted that the chains returned by unzipping are not necessarily all the same length, but they all start in the same IPF layer.
 
-The implementation of unzipping is shown in Listing~\ref{code:ipfs-forest-unzipnode}. As the algorithm progresses, we keep track of node chains that represent the strands being unzipped: these will be what is eventually returned as the result. In each iteration of the loop, we keep track of a `current' node, initially the input node. We determine the siblings of this node (defined to be the other children of its parent) and calculate their connected components. To these we add a singleton component containing the current node itself. We then split the parent of the current node into the specified components, update the aforementioned chains and repeat the process with the parent of the current node. The loop terminates when we reach the user-specified target layer.
+The implementation of unzipping is shown in Listing~\ref{code:ipfs-forest-unzipnode}. As the algorithm progresses, we keep track of node chains that represent the strands being unzipped: these will be what is eventually returned as the result. In each iteration of the loop, we keep track of a `current' node, initially the input node. We determine the siblings of this node (defined to be the other children of its parent) and calculate their connected components. To these we add a singleton component containing the current node itself. We then split the parent of the current node into the specified components, update the aforementioned chains and repeat the process with the parent of the current node. The loop terminates when we reach the user-specified target layer. The {\small\verb|begin_command_sequence|} / {\small\verb|end_command_sequence|} command pair ensures that the entire operation is treated as atomic for the purposes of undo.
 
-The construction of the chains is the most interesting part of the algorithm. The way in which this works can be seen by stepping through the unzipping example in Figure~\ref{fig:ipfs-forest-unzipping}. Initially, the array of chains is initialised with a singleton chain containing only the node being unzipped: in this case $(0,5)$.\footnotemark{} During each iteration of the loop, each node resulting from that iteration's split node operation will either be used to augment an existing chain, or to add a new one: specifically, each existing chain is prepended with the parent of its head node, which is then removed from the set of nodes resulting from the split (it is guaranteed to be present because of the way the algorithm works); the remaining nodes resulting from the split are then used to create new singleton chains. A step-by-step walkthrough of the chain construction process for the example is shown in Table~\ref{tbl:ipfs-forest-unzipping}.
+The construction of the chains is the most interesting part of the algorithm. The way in which this works can be seen by stepping through the unzipping example in Figure~\ref{fig:ipfs-forest-unzipping}. Initially, the array of chains is initialised with a singleton chain containing only the node being unzipped: in this case $(0,5)$\footnotemark. During each iteration of the loop, each node resulting from that iteration's split node operation will either be used to augment an existing chain, or to add a new one: specifically, each existing chain is prepended with the parent of its head node, which is then removed from the set of nodes resulting from the split (it is guaranteed to be present because of the way the algorithm works); the remaining nodes resulting from the split are then used to create new singleton chains.
 
 \footnotetext{This is an implementation trick that ensures that the chain leading up from the node being unzipped is the first chain in the array: this allows it to be easily identified by algorithms such as \texttt{merge\_nonsibling\_nodes} that need ready access to it (they would otherwise have to search through all the chains to find it). The final chain should not contain the actual node being unzipped (only the nodes above it), so in practice we remove it from the end of the chain again before returning.}
 
@@ -302,34 +310,53 @@ To perform our analysis, we modified the \emph{millipede} software to calculate 
 \label{sec:conclusions}
 %######################
 
-Despite the usefulness of IPFs as a multi-scale image representation, and their ubiquitous appearance in the literature, little attention has previously been devoted to ways of editing them that are convenient for the user, limiting their applicability in domains such as medical imaging where the post-segmentation introduction of expert knowledge is important. In this paper, we have therefore presented algorithms to facilitate such intuitive editing, most notably an algorithm for non-sibling merging that allows the user to merge regions based on their adjacency in the image rather than the IPF. In addition to supporting non-sibling node merging (and parent switching), the unzipping and zipping algorithms we have presented are also useful in their own right as a way of transferring interesting regions from one level of the segmentation to another, a task that can support later feature identification algorithms. The practical benefits of these algorithms in the context of medical imaging have been demonstrated by our implementation of them in \emph{millipede}; the algorithms can also be straightforwardly applied to other contexts where partition forests see use, both in image processing and elsewhere (e.g.~3D mesh segmentation \cite{garland01}).
+Despite the usefulness of IPFs as a multi-scale image representation, and their ubiquitous appearance in the literature, little attention has previously been devoted to ways of editing them that are convenient for the user, limiting their applicability in domains such as medical imaging where the post-segmentation introduction of expert knowledge is important. In this paper we have therefore presented algorithms to facilitate such intuitive editing, most notably an algorithm for non-sibling merging that allows the user to merge regions based on their adjacency in the image rather than the IPF. In addition to supporting non-sibling node merging (and parent switching), the unzipping and zipping algorithms we have presented are also useful in their own right as a way of transferring interesting regions from one level of the segmentation to another, a task that can support later feature identification algorithms. The practical benefits of these algorithms in the context of medical imaging have been demonstrated by our implementation of them in \emph{millipede}; the algorithms can also be straightforwardly applied to other contexts where partition forests see use, both in image processing and elsewhere (e.g.~3D mesh segmentation \cite{garland01}).
 
 %---
 \begin{stusubfig}{p}
-	\subfigure[Initial hierarchy]{\includegraphics[width=.41\linewidth]{ipfs-forest-unzipping-a-hierarchy.png}}%
+	\subfigure[Initial hierarchy]{\includegraphics[width=.39\linewidth]{ipfs-forest-unzipping-a-hierarchy.png}}%
 	\hspace{8mm}%
-	\subfigure[After splitting $(1,2)$]{\includegraphics[width=.41\linewidth]{ipfs-forest-unzipping-b-hierarchy.png}}%
+	\subfigure[After splitting $(1,2)$]{\includegraphics[width=.39\linewidth]{ipfs-forest-unzipping-b-hierarchy.png}}%
 	\\
-	\subfigure[After splitting $(2,2)$]{\includegraphics[width=.41\linewidth]{ipfs-forest-unzipping-c-hierarchy.png}}%
+	\subfigure[After splitting $(2,2)$]{\includegraphics[width=.39\linewidth]{ipfs-forest-unzipping-c-hierarchy.png}}%
 	\hspace{8mm}%
-	\subfigure[After splitting $(3,2)$]{\includegraphics[width=.41\linewidth]{ipfs-forest-unzipping-d-hierarchy.png}}%
-\caption{An example of unzipping: unzipping node $(0,5)$ to layer $3$}
+	\subfigure[After splitting $(3,2)$]{\includegraphics[width=.39\linewidth]{ipfs-forest-unzipping-d-hierarchy.png}}%
+\caption{An example of unzipping. The nodes are labelled by a pair $(\ell,n)$ where $\ell$ is the layer number and $n$ a unique identifier for each layer, given here by the smallest identifier of its child nodes. In the example, node $(0,5)$ is unzipped to layer $3$; Table~\ref{tbl:ipfs-forest-unzipping} shows a step-by-step walkthrough of the chain construction process.}
 \label{fig:ipfs-forest-unzipping}
 \end{stusubfig}
 %---
 
 %---
 \begin{stusubfig}{p}
-	\subfigure[Initial hierarchy]{\includegraphics[width=.4\linewidth]{ipfs-forest-zipping-a-hierarchy.png}}%
+	\subfigure[Initial hierarchy]{\includegraphics[width=.39\linewidth]{ipfs-forest-zipping-a-hierarchy.png}}%
 	\hspace{8mm}%
-	\subfigure[After merging layer $3$ nodes]{\includegraphics[width=.4\linewidth]{ipfs-forest-zipping-b-hierarchy.png}}%
+	\subfigure[After merging layer $3$ nodes]{\includegraphics[width=.39\linewidth]{ipfs-forest-zipping-b-hierarchy.png}}%
 	\\
-	\subfigure[After merging layer $2$ nodes]{\includegraphics[width=.4\linewidth]{ipfs-forest-zipping-c-hierarchy.png}}%
+	\subfigure[After merging layer $2$ nodes]{\includegraphics[width=.39\linewidth]{ipfs-forest-zipping-c-hierarchy.png}}%
 	\hspace{8mm}%
-	\subfigure[After merging layer $1$ nodes]{\includegraphics[width=.4\linewidth]{ipfs-forest-zipping-d-hierarchy.png}}%
+	\subfigure[After merging layer $1$ nodes]{\includegraphics[width=.39\linewidth]{ipfs-forest-zipping-d-hierarchy.png}}%
 \caption{An example of zipping: zipping together the four chains $[(3,0), (2,6), (1,6)]$, $[(3,2), (2,2)]$, $[(3,5), (2,5)]$ and $[(3,8), (2,8), (1,8)]$}
 \label{fig:ipfs-forest-zipping}
 \end{stusubfig}
+%---
+
+\clearpage
+
+%---
+\begin{table*}[p]
+\caption{Stepping through the chain construction for the unzipping example in Figure~\ref{fig:ipfs-forest-unzipping}}
+\label{tbl:ipfs-forest-unzipping}
+\begin{tabular}{|l||l|l|l|l|l|}
+\hline
+\textbf{Stage} & \textbf{Cur} & \textbf{Parent} & \textbf{Components} & \textbf{Result} & \textbf{Chains} \\
+\hline
+Iteration $1$ & $(0,5)$ & $(1,2)$ & $[\{2\},\{5\}]$ & $\{(1,2),(1,5)\}$ & $[[(1,5),(0,5)],[(1,2)]]$ \\
+Iteration $2$ & $(1,5)$ & $(2,2)$ & $[\{2\},\{5\},\{8\}]$ & $\{(2,2),(2,5),(2,8)\}$ & $[[(2,5),(1,5),(0,5)],[(2,2),(1,2)],[(2,8)]]$ \\
+Iteration $3$ & $(2,5)$ & $(3,2)$ & $[\{2\},\{5\},\{8\}]$ &  $\{(3,2),(3,5),(3,8)\}$ & $[[(3,5),(2,5),(1,5),(0,5)],[(3,2),(2,2),(1,2)],[(3,8),(2,8)]]$ \\
+Final & --- & --- & --- & --- & $[[(3,5),(2,5),(1,5)],[(3,2),(2,2),(1,2)],[(3,8),(2,8)]]$ \\
+\hline
+\end{tabular}
+\end{table*}
 %---
 
 %---
@@ -351,23 +378,6 @@ Despite the usefulness of IPFs as a multi-scale image representation, and their 
 \clearpage
 
 %---
-\begin{table*}[p]
-\caption{Stepping through the chain construction for the unzipping example}
-\label{tbl:ipfs-forest-unzipping}
-\begin{tabular}{|l||l|l|l|l|l|}
-\hline
-\textbf{Stage} & \textbf{Cur} & \textbf{Parent} & \textbf{Components} & \textbf{Result} & \textbf{Chains} \\
-\hline
-Iteration $1$ & $(0,5)$ & $(1,2)$ & $[\{2\},\{5\}]$ & $\{(1,2),(1,5)\}$ & $[[(1,5),(0,5)],[(1,2)]]$ \\
-Iteration $2$ & $(1,5)$ & $(2,2)$ & $[\{2\},\{5\},\{8\}]$ & $\{(2,2),(2,5),(2,8)\}$ & $[[(2,5),(1,5),(0,5)],[(2,2),(1,2)],[(2,8)]]$ \\
-Iteration $3$ & $(2,5)$ & $(3,2)$ & $[\{2\},\{5\},\{8\}]$ &  $\{(3,2),(3,5),(3,8)\}$ & $[[(3,5),(2,5),(1,5),(0,5)],[(3,2),(2,2),(1,2)],[(3,8),(2,8)]]$ \\
-Final & --- & --- & --- & --- & $[[(3,5),(2,5),(1,5)],[(3,2),(2,2),(1,2)],[(3,8),(2,8)]]$ \\
-\hline
-\end{tabular}
-\end{table*}
-%---
-
-%---
 \stufigexx{width=.9\linewidth}{millipede.png}{The segmentation window of \emph{millipede}, showing an axial (X-Y) slice through an abdominal CT image (left) and an axial slice through one of the layers of the corresponding IPF (right). The GUI allows the user to view the image and the IPF from different directions (top, front and side), and to move around in space and switch between the various different layers of the IPF using sliders. Important features such as major organs can be identified using menus (not shown) or keyboard shortcuts. The identification results can be visualised in 3D using the Multiple Material Marching Cubes (M3C) algorithm \cite{wu03}.}{fig:millipede}{p}
 %---
 
@@ -383,15 +393,15 @@ Final & --- & --- & --- & --- & $[[(3,5),(2,5),(1,5)],[(3,2),(2,2),(1,2)],[(3,8)
 \vspace{1cm}
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{pic_stuart.jpg}}]{Stuart Golodetz}
-Stuart Golodetz obtained his DPhil in Computer Science at Oxford University, working on 3D image segmentation and feature identification. He then spent two interesting years in industry, working in the areas of credit risk management, logic programming and software analytics. His areas of interest include medical image analysis, computer games development and the intricacies of different programming languages, especially C++. He was a session chair for the 6th International Symposium on Image and Signal Processing and Analysis, ISPA 2009. He is a member of the Association of C and C++ Users (ACCU) and has written a number of articles for their magazines.
+obtained his DPhil in Computer Science at Oxford University, working on 3D image segmentation and feature identification. He then spent two interesting years in industry, working in the areas of credit risk management, logic programming and software analytics. His areas of interest include medical image analysis, computer games development and the intricacies of different programming languages, especially C++. He was a session chair for the 6th International Symposium on Image and Signal Processing and Analysis, ISPA 2009. He is a member of the Association of C and C++ Users (ACCU) and has written a number of articles for their magazines.
 \end{IEEEbiography}
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{pic_irina.jpg}}]{Irina Voiculescu}
-TODO
+is a Lecturer in Computer Science at the University of Oxford. She obtained a PhD at the University of Bath, for research in Constructive Solid Geometry. She contributed to the development of the geometric modelling software \svlis through the application of polynomial root finding methods. She works in the general area of geometric modelling, specifically focusing on the mathematics of curves and surfaces, interval arithmetic, molecular modelling and medical image analysis. She is a Fellow of the UK Geometric Modelling Society.
 \end{IEEEbiography}
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{pic_stephen.jpg}}]{Stephen Cameron}
-Stephen Cameron obtained his PhD in Artificial Intelligence at Edinburgh University, working on the geometric modelling of robots and on collision detection. His general area of interest is in spatial reasoning, although this covers a wide range which includes the planning of tasks and motions for robot vehicles and manipulators, the use of geometric models, and the scheduling of fleets of robots. Some of his work is in collaboration with members of the Oxford University Robotics Research Group in the Department of Engineering Science. He is a member of the AISB, the IEEE Robotics and Automation Society, the Geometric Modelling Society, the IAM and CAMRA.
+obtained his PhD in Artificial Intelligence at Edinburgh University, working on the geometric modelling of robots and on collision detection. His general area of interest is in spatial reasoning, although this covers a wide range which includes the planning of tasks and motions for robot vehicles and manipulators, the use of geometric models, and the scheduling of group of flying or walking robots. He is a Reader in Computer Science at the University of Oxford. He is a member of the AISB, the IEEE Robotics and Automation Society, and the Geometric Modelling Society.
 \end{IEEEbiography}
 
 \end{document}

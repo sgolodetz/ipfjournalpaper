@@ -152,13 +152,29 @@ tabsize=4
 \begin{document}
 
 \title{Zipping Partition Forests to Edit Segmented Images}
-\author{Stuart Golodetz, Irina Voiculescu and Stephen Cameron}
+
+\author{Stuart~Golodetz, Irina~Voiculescu and Stephen~Cameron%
+\thanks{S.~Golodetz was with the University of Oxford 2006--2011.}%
+\thanks{I. Voiculescu and S. Cameron are with the University of Oxford.}}
+
 \date{\today}
+
+\markboth{IEEE Transactions on Image Processing, Vol.~?, No.~?,~?~2014}%
+{Golodetz \MakeLowercase{\textit{et al.}}: Zipping Partition Forests to Edit Segmented Images}
+
+\IEEEpubid{0000--0000/00\$00.00~\copyright~2012 IEEE}
+
 \maketitle
 
 \begin{abstract}
 \noindent The segmentation of images and the subsequent identification of key features therein are important components of applications in a variety of contexts, including those such as medical imaging where extremely high levels of accuracy are required. However, both segmentation and feature identification remain challenging to automate completely, and so there is often a need for domain specialists to be able to edit the results produced by automatic tools; evidently the editing methods used depend strongly on how the results are represented. One helpful representation is the \emph{image partition forest} (IPF), or region hierarchy, a tree-like data structure in which each node represents a contiguous region of the image. Unfortunately, since little research attention has been devoted in the past to ways of interacting with IPFs, it can be difficult for domain specialists to make changes to them after they have been built. We therefore present a set of algorithms that can be used to facilitate interactive changes to IPFs. The algorithms were implemented as a core part of \emph{millipede}, a cross-platform tool for 3D segmentation, feature identification and visualisation. We highlight the way in which the user experience was improved as a result.
 \end{abstract}
+
+\begin{IEEEkeywords}
+image partition forests, zipping algorithms, user interaction, abdominal CT segmentation
+\end{IEEEkeywords}
+
+\IEEEpeerreviewmaketitle
 
 %#####################
 \section{Introduction}
@@ -171,6 +187,8 @@ Image segmentation, the problem of how to partition an image into regions that h
 Depending on the kind of segmentation method (see \cite{golodetz11} for a survey), its result can be represented in a variety of different ways and require varying different methods of interaction. For example, editing a segmentation produced by a thresholding approach might involve changing the threshold value and re-segmenting the image, whereas editing a segmentation produced by a snakes approach (e.g.~\cite{kass88,lobregt95}) might involve a human user dragging a snake contour around using a graphical user interface (GUI). Choosing a segmentation method inevitably involves balancing various competing criteria (see e.g.~Table 3.1 of \cite{golodetz11}) -- notably, here, methods can produce results that are useful but hard to edit.
 
 One type of segmentation result that can provide a great deal of useful information for further processing is what we call the \emph{image partition forest} (IPF) representation, which represents an image as a hierarchy of partitions (\S\ref{sec:ipfs}). This representation is useful because it consists of related segmentations of the image at different scales, providing a helpful space in which to search for regions corresponding to image features of different sizes. An IPF can be produced as the result of a number of different segmentation approaches, and detailed techniques for constructing one using watershed/waterfall segmentation are described in \cite{golodetz11}.
+
+\IEEEpubidadjcol
 
 Due to their usefulness, IPFs as a data structure have appeared widely in the literature under a variety of names, e.g.~hierarchy of (region adjacency) graphs \cite{kropatsch04,nacken95,shen97}, hierarchical attributed region adjacency graph \cite{fischer04}, hierarchy of partitions \cite{haxhimusa03,lezoray06}, picture tree \cite{andrade03}, graph pyramid \cite{kerren06}, bounded irregular pyramid \cite{marfil07} and segmentation graph \cite{borenstein06}. However, IPFs can be hard for users to change due to their tree-like structure -- comparatively little research appears to have been done into how to edit them in terms of the underlying image rather than the region hierarchy they represent. This is unfortunate, because it limits the applicability of techniques that automatically produce IPFs in domains such as medical imaging where the later introduction of expert knowledge is important.
 

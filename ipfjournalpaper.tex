@@ -210,7 +210,7 @@ An image partition forest (or IPF) is a hierarchy of adjacency graphs that all p
 %---
 
 %---
-\stufigex{width=.85\linewidth}{ipfs-ctconcept.png}{An example partition forest for an abdominal CT scan}{fig:ipfs-ctconcept}{htb}
+\stufigex{width=.85\linewidth}{ipfs-ctconcept.png}{An example partition forest for an abdominal CT scan. Note that it is common for partition forests to have relatively few branch layers ($5$ in this case) since the approaches that create them generally converge rapidly.}{fig:ipfs-ctconcept}{htb}
 %---
 
 Each node in an IPF can have a set of properties associated with it, shown as blue text in Figure~\ref{fig:ipfs-concept}. Properties of nodes in the leaf layer (which correspond to individual pixels in the image) can be assigned arbitrarily, but properties of nodes in branch layers must be functions of the properties of their children in the layer below. In this example, a single, arbitrary value has been associated with each node in the leaf layer of the IPF. Nodes in higher layers have been given a `mean value' property that is calculated from the values of the subsumed leaf nodes. In Figure~\ref{fig:ipfs-ctconcept}, each leaf node has a `grey value' property associated with it that is simply the value of the corresponding image pixel; each branch node is then assigned a `mean grey value' property, namely the mean of the grey values of the pixels its region contains.
@@ -291,6 +291,8 @@ For valid zips, we start by determining the high and low layers of the chains. A
 \label{sec:nsmerge}
 %#################################
 
+Having discussed unzipping and zipping, we are now in a position to implement the non-sibling node merging operation mentioned previously: this allows the user to merge nodes based on their adjacency in the image rather than on whether or not they share a common parent in the IPF. This is the `intuitive' merge operation that users might want to perform, but it is difficult to implement without the machinery provided by the zipping algorithms.
+
 %---
 \begin{stulisting}[t]
 \caption{Non-Sibling Node Merging: Implementation}
@@ -298,8 +300,6 @@ For valid zips, we start by determining the high and low layers of the chains. A
 \lstinputlisting[style=Default]{ipfs-forest-mergenonsiblingnodes.lst}
 \end{stulisting}
 %---
-
-Having discussed unzipping and zipping, we are now in a position to implement the non-sibling node merging operation mentioned previously: this allows the user to merge nodes based on their adjacency in the image rather than on whether or not they share a common parent in the IPF. This is the `intuitive' merge operation that users might want to perform, but it is difficult to implement without the machinery provided by the zipping algorithms.
 
 Non-sibling node merging involves taking a set of arbitrary nodes in any layer of the hierarchy other than the lowest, dividing it into its connected components and then merging the nodes in each one individually (using a combination of unzipping and zipping). Since each component is connected, the result of each merge represents a contiguous image region. The algorithm takes as input the set of nodes to be merged, and returns the set of nodes resulting from merging each of the input's connected components (i.e.~there is one output node for each connected component of the input). See Figure~\ref{fig:ipfs-forest-nonsiblingnodemerging} for an example.
 
@@ -396,7 +396,7 @@ Final & --- & --- & --- & --- & $[[(3,5),(2,5),(1,5)],[(3,2),(2,2),(1,2)],[(3,8)
 \clearpage
 
 %---
-\stufigexx{width=.9\linewidth}{millipede.png}{The segmentation window of \emph{millipede}, showing an axial (X-Y) slice through an abdominal CT image (left) and an axial slice through one of the layers of the corresponding IPF (right). The GUI allows the user to view the image and the IPF from different directions (top, front and side), and to move around in space and switch between the various different layers of the IPF using sliders. Important features such as major organs can be identified using menus (not shown) or keyboard shortcuts. The identification results can be visualised in 3D using the Multiple Material Marching Cubes (M3C) algorithm \cite{wu03}.}{fig:millipede}{p}
+\stufigexx{width=.9\linewidth}{millipede.png}{The segmentation window of \emph{millipede}, showing an axial (X-Y) slice through an abdominal CT image (left) and an axial slice through one of the layers of the corresponding IPF (right). The GUI allows the user to view the image and the IPF from different directions (top, front and side), and to move around in space and switch between the various different layers of the IPF using sliders. Important features such as major organs can be identified using menus (not shown) or keyboard shortcuts. The organ identification results can also be visualised in 3D using the Multiple Material Marching Cubes (M3C) algorithm \cite{wu03}.}{fig:millipede}{p}
 %---
 
 %---
